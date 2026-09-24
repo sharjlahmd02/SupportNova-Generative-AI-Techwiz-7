@@ -1,0 +1,15 @@
+# Backend .gitignore
+venv/
+__pycache__/
+*.pyc
+.env
+*.db
+*.sqlite
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+.DS_Store
+*.egg-info/
+dist/
+build/
