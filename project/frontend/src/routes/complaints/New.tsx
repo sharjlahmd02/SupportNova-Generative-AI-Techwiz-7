@@ -1,8 +1,19 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Send } from 'lucide-react'
 import { api } from '../../lib/api'
 import { getErrorMessage } from '../../lib/errors'
+import { useToast } from '../../components/ui'
 import type { Complaint } from '../../types'
+import {
+  Alert,
+  Button,
+  Card,
+  Input,
+  PageHeader,
+  Select,
+  Textarea,
+} from '../../components/ui'
 
 const OPTIONAL_TEXT_FIELDS = [
   'customer_type',
@@ -25,206 +36,202 @@ const EMPTY_FORM = {
   requested_resolution: '',
 }
 
+type FormState = typeof EMPTY_FORM
+type FieldErrors = Partial<Record<keyof FormState | 'form', string>>
+
 export function ComplaintNew() {
-  const [formData, setFormData] = useState({ ...EMPTY_FORM })
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [formData, setFormData] = useState<FormState>({ ...EMPTY_FORM })
+  const [errors, setErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const titleRef = useRef<HTMLInputElement>(null)
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = event.target
+    setFormData((current) => ({ ...current, [name]: value }))
+    setErrors((current) => ({ ...current, [name]: undefined, form: undefined }))
   }
 
-  const buildPayload = (): Record<string, unknown> => {
+  const validate = (): { payload: Record<string, unknown> | null; errors: FieldErrors } => {
+    const next: FieldErrors = {}
     const title = formData.title.trim()
     const description = formData.description.trim()
-    if (!title) throw new Error('Title is required.')
-    if (!description) throw new Error('Description is required.')
 
-    const payload: Record<string, unknown> = { title, description }
-
-    for (const field of OPTIONAL_TEXT_FIELDS) {
-      const value = formData[field].trim()
-      if (value) payload[field] = value
-    }
+    if (!title) next.title = 'A title is required so the complaint can be routed.'
+    if (!description) next.description = 'Describe the issue so both pipelines have something to analyse.'
 
     const attachments = formData.attachments.trim()
     if (attachments) {
       try {
-        payload.attachments = JSON.parse(attachments)
+        JSON.parse(attachments)
       } catch {
-        throw new Error('Attachments must be valid JSON, or left empty.')
+        next.attachments = 'Attachments must be valid JSON, or left empty.'
       }
     }
 
-    return payload
+    if (Object.keys(next).length > 0) return { payload: null, errors: next }
+
+    const payload: Record<string, unknown> = { title, description }
+    for (const field of OPTIONAL_TEXT_FIELDS) {
+      const value = formData[field].trim()
+      if (value) payload[field] = value
+    }
+    if (attachments) payload.attachments = JSON.parse(attachments)
+
+    return { payload, errors: next }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const { payload, errors: nextErrors } = validate()
+
+    if (!payload) {
+      setErrors(nextErrors)
+      if (nextErrors.title) titleRef.current?.focus()
+      else if (nextErrors.description) descriptionRef.current?.focus()
+      return
+    }
+
     setLoading(true)
     try {
-      const response = await api.post<Complaint>('/complaints', buildPayload())
-      setSuccess('Complaint submitted successfully! Taking you to the complaint…')
-      setTimeout(() => navigate(`/complaints/${response.data.id}`, { replace: true }), 700)
+      const response = await api.post<Complaint>('/complaints', payload)
+      toast({
+        tone: 'success',
+        title: `Complaint #${response.data.id} submitted`,
+        description: 'Opening it now — run the analysis when you are ready.',
+      })
+      setTimeout(() => navigate(`/complaints/${response.data.id}`, { replace: true }), 500)
     } catch (err) {
-      setError(getErrorMessage(err, 'Failed to submit complaint'))
+      setErrors({ form: getErrorMessage(err, 'Failed to submit complaint') })
       setLoading(false)
     }
   }
 
   return (
-    <div>
-      <header className="page-header">
-        <h1 className="page-title">Submit Complaint</h1>
-        <p className="page-subtitle">Fill in the details below to submit a new complaint</p>
-      </header>
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Submit a complaint"
+        description="Describe the issue. GenAI will interpret it while the Python rule engine independently checks the result."
+      />
 
-          <div className="form-group">
-            <label htmlFor="title">Title *</label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              value={formData.title}
+      {errors.form && (
+        <Alert tone="error" title="Could not submit the complaint" onDismiss={() => setErrors((c) => ({ ...c, form: undefined }))}>
+          {errors.form}
+        </Alert>
+      )}
+
+      <Card>
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <Input
+            ref={titleRef}
+            label="Title"
+            required
+            maxLength={200}
+            placeholder="Brief summary of the issue"
+            hint="One line — this is what appears in every dashboard."
+            error={errors.title}
+            value={formData.title}
+            onChange={handleChange}
+            name="title"
+          />
+
+          <Textarea
+            ref={descriptionRef}
+            label="Description"
+            required
+            rows={7}
+            placeholder="What happened, when, and what you have already tried…"
+            hint="Sentiment and urgency are derived from this text — the rule engine, not the model, decides urgency."
+            error={errors.description}
+            value={formData.description}
+            onChange={handleChange}
+            name="description"
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Select
+              label="Customer type"
+              value={formData.customer_type}
               onChange={handleChange}
-              required
-              maxLength={200}
-              placeholder="Brief summary of the issue"
-            />
-          </div>
+              name="customer_type"
+            >
+              <option value="">Select…</option>
+              <option value="individual">Individual</option>
+              <option value="business">Business</option>
+              <option value="vip">VIP</option>
+            </Select>
 
-          <div className="form-group">
-            <label htmlFor="description">Description *</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
+            <Input
+              label="Product / service"
+              placeholder="e.g. NovaCloud Backup"
+              value={formData.product_service}
               onChange={handleChange}
-              required
-              rows={6}
-              placeholder="Detailed description of the complaint..."
+              name="product_service"
             />
-          </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            <div className="form-group">
-              <label htmlFor="customer_type">Customer Type</label>
-              <select
-                id="customer_type"
-                name="customer_type"
-                value={formData.customer_type}
-                onChange={handleChange}
-              >
-                <option value="">Select...</option>
-                <option value="individual">Individual</option>
-                <option value="business">Business</option>
-                <option value="vip">VIP</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="product_service">Product/Service</label>
-              <input
-                id="product_service"
-                name="product_service"
-                type="text"
-                value={formData.product_service}
-                onChange={handleChange}
-                placeholder="Product or service name"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="order_ref">Order Reference</label>
-              <input
-                id="order_ref"
-                name="order_ref"
-                type="text"
-                value={formData.order_ref}
-                onChange={handleChange}
-                placeholder="Order or transaction ID"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="channel">Channel</label>
-              <select
-                id="channel"
-                name="channel"
-                value={formData.channel}
-                onChange={handleChange}
-              >
-                <option value="web">Web</option>
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="chat">Chat</option>
-                <option value="in_person">In Person</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="prior_complaint_ref">Prior Complaint Reference</label>
-            <input
-              id="prior_complaint_ref"
-              name="prior_complaint_ref"
-              type="text"
-              value={formData.prior_complaint_ref}
+            <Input
+              label="Order reference"
+              placeholder="Order or transaction ID"
+              value={formData.order_ref}
               onChange={handleChange}
-              placeholder="Reference to previous related complaint (if any)"
+              name="order_ref"
             />
+
+            <Select label="Channel" value={formData.channel} onChange={handleChange} name="channel">
+              <option value="web">Web</option>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="chat">Chat</option>
+              <option value="in_person">In person</option>
+            </Select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="requested_resolution">Requested Resolution</label>
-            <textarea
-              id="requested_resolution"
-              name="requested_resolution"
-              value={formData.requested_resolution}
-              onChange={handleChange}
-              rows={3}
-              placeholder="What resolution are you seeking?"
-            />
-          </div>
+          <Input
+            label="Prior complaint reference"
+            placeholder="Reference to a previous related complaint (if any)"
+            hint="Repeat complaints get linked to their original case."
+            value={formData.prior_complaint_ref}
+            onChange={handleChange}
+            name="prior_complaint_ref"
+          />
 
-          <div className="form-group">
-            <label htmlFor="attachments">Attachments (JSON, optional)</label>
-            <textarea
-              id="attachments"
-              name="attachments"
-              value={formData.attachments}
-              onChange={handleChange}
-              rows={3}
-              placeholder='[{"filename": "doc.pdf", "url": "..."}]'
-            />
-          </div>
+          <Textarea
+            label="Requested resolution"
+            rows={3}
+            placeholder="What resolution are you seeking?"
+            value={formData.requested_resolution}
+            onChange={handleChange}
+            name="requested_resolution"
+          />
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Complaint'}
-            </button>
-            <Link to="/" className="btn btn-secondary">
+          <Textarea
+            label="Attachments (JSON, optional)"
+            rows={3}
+            placeholder='[{"filename": "doc.pdf", "url": "..."}]'
+            hint="Leave empty if you have nothing to attach."
+            error={errors.attachments}
+            value={formData.attachments}
+            onChange={handleChange}
+            name="attachments"
+          />
+
+          <div className="flex flex-wrap gap-3 border-t border-border pt-4">
+            <Button type="submit" loading={loading} icon={<Send className="size-4" />}>
+              {loading ? 'Submitting…' : 'Submit complaint'}
+            </Button>
+            <Link
+              to="/"
+              className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-canvas"
+            >
               Cancel
             </Link>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

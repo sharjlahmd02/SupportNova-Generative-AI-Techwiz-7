@@ -39,11 +39,13 @@ supportnova/
 │   │   ├── routes/        # Page components
 │   │   ├── lib/           # API client, utilities
 │   │   ├── components/    # Reusable UI components
+│   │   │   └── ui/        # Tailwind primitives (Button, Card, Table, Modal, …)
+│   │   ├── styles/        # index.css — Tailwind v4 entry + @theme tokens
 │   │   ├── context/       # React context providers
 │   │   └── types/         # TypeScript types
 │   ├── index.html
 │   ├── package.json
-│   └── vite.config.ts
+│   └── vite.config.ts     # plugins: react(), tailwindcss()
 ├── README.md
 └── AI_USAGE.md
 ```
@@ -73,12 +75,17 @@ API docs: http://localhost:8000/docs
 
 ```bash
 cd frontend
-npm install
+npm install                # includes tailwindcss + @tailwindcss/vite
 cp .env.example .env  # or create .env with VITE_API_BASE_URL
 npm run dev
 ```
 
 App runs at: http://localhost:5173
+
+**Styling:** Tailwind CSS v4 (CSS-first — no `tailwind.config.js`). Tokens live in
+`src/styles/index.css` under `@theme`; shared components live in `src/components/ui/`.
+See the *UI/UX Design System* section of the project design documentation for tokens, the app shell
+and the component inventory. Don't mix in Tailwind v3 directives.
 
 ## Key Design Principles
 
@@ -91,6 +98,11 @@ App runs at: http://localhost:5173
 4. **Config Over Code**: Categories, departments, rules, thresholds live in config/DB — adding a category requires no code changes.
 
 5. **Audit Trail**: Original AI output, rule output, and any human override are all retained.
+
+6. **Presentation Is a Requirement Too**: the UI is a professional, SaaS-grade Tailwind CSS design
+   system — one `<AppShell>`, one primitive component set, design tokens instead of ad-hoc CSS, and
+   loading/empty/error/success states on every data view. Functionality never comes at the cost of
+   an interface an evaluator can't follow.
 
 ## API Endpoints
 
