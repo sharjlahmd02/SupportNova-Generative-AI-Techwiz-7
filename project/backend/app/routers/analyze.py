@@ -31,6 +31,61 @@ def _load_policy_chunks(db: Session, limit: int = 5):
     ]
 
 
+def _serialize_intelligence(intel: ComplaintIntelligence) -> dict:
+    return {
+        "complaint_id": str(intel.complaint_id),
+        "primary_issue": intel.primary_issue,
+        "secondary_issue": intel.secondary_issue,
+        "issue_category": intel.issue_category,
+        "subcategory": intel.subcategory,
+        "sentiment": intel.sentiment,
+        "urgency": intel.urgency,
+        "priority": intel.priority,
+        "entities": intel.entities or {},
+        "department": intel.department,
+        "secondary_department": intel.secondary_department,
+        "policy_id": intel.policy_id,
+        "policy_section": intel.policy_section,
+        "resolution_steps": intel.resolution_steps or [],
+        "escalation_required": bool(intel.escalation_required),
+        "escalation_reason": intel.escalation_reason,
+        "escalation_level": intel.escalation_level,
+        "response_type": intel.response_type,
+        "customer_response": intel.customer_response,
+        "follow_up_required": bool(intel.follow_up_required),
+        "follow_up_message": intel.follow_up_message,
+        "clarification_questions": intel.clarification_questions or [],
+        "agent_guidance": intel.agent_guidance or [],
+        "prompt_version": intel.prompt_version,
+        "model": intel.model,
+        "analysis_timestamp": intel.analysis_timestamp,
+    }
+
+
+@router.get("/{complaint_id}/analysis", response_model=IntelligenceSchema)
+def get_analysis(
+    complaint_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Return the stored Pipeline 1 (Gemini) output for a complaint, if it exists."""
+    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
+    if complaint is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+
+    intelligence = (
+        db.query(ComplaintIntelligence)
+        .filter(ComplaintIntelligence.complaint_id == complaint.id)
+        .first()
+    )
+    if intelligence is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No GenAI analysis yet — run the analyze endpoint first",
+        )
+    return _serialize_intelligence(intelligence)
+
+
 @router.post(
     "/{complaint_id}/analyze",
     response_model=IntelligenceSchema,
@@ -119,31 +174,4 @@ def analyze_complaint(
     db.commit()
     db.refresh(intelligence)
 
-    return {
-        "complaint_id": str(complaint.id),
-        "primary_issue": intelligence.primary_issue,
-        "secondary_issue": intelligence.secondary_issue,
-        "issue_category": intelligence.issue_category,
-        "subcategory": intelligence.subcategory,
-        "sentiment": intelligence.sentiment,
-        "urgency": intelligence.urgency,
-        "priority": intelligence.priority,
-        "entities": intelligence.entities or {},
-        "department": intelligence.department,
-        "secondary_department": intelligence.secondary_department,
-        "policy_id": intelligence.policy_id,
-        "policy_section": intelligence.policy_section,
-        "resolution_steps": intelligence.resolution_steps or [],
-        "escalation_required": intelligence.escalation_required,
-        "escalation_reason": intelligence.escalation_reason,
-        "escalation_level": intelligence.escalation_level,
-        "response_type": intelligence.response_type,
-        "customer_response": intelligence.customer_response,
-        "follow_up_required": intelligence.follow_up_required,
-        "follow_up_message": intelligence.follow_up_message,
-        "clarification_questions": intelligence.clarification_questions or [],
-        "agent_guidance": intelligence.agent_guidance or [],
-        "prompt_version": intelligence.prompt_version,
-        "model": intelligence.model,
-        "analysis_timestamp": intelligence.analysis_timestamp,
-    }
+    return _serialize_intelligence(intelligence)

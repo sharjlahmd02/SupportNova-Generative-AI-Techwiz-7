@@ -1,79 +1,139 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { api } from '../lib/api'
-
-interface User {
-  id: number
-  username: string
-  email: string
-  role: string
-}
+import { getErrorMessage } from '../lib/errors'
+import { getHomePath } from '../lib/roles'
+import type { User } from '../types'
 
 interface AuthContextType {
   user: User | null
   token: string | null
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, email: string, password: string, role?: string) => Promise<void>
-  logout: () => void
   isLoading: boolean
+  homePath: string
+  login: (username: string, password: string) => Promise<User>
+  register: (username: string, email: string, password: string, role?: string) => Promise<User>
+  logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+function readStoredUser(): User | null {
+  const raw = localStorage.getItem('user')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as User
+  } catch {
+    localStorage.removeItem('user')
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(() => readStoredUser())
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
-      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
-    }
-    setIsLoading(false)
-  }, [])
-
-  const login = async (username: string, password: string) => {
-    const response = await api.post('/auth/login', { username, password })
-    const { access_token } = response.data
-    setToken(access_token)
-    localStorage.setItem('token', access_token)
-    api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
-    await fetchMe()
-  }
-
-  const register = async (username: string, email: string, password: string, role = 'customer') => {
-    const response = await api.post('/auth/register', { username, email, password, role })
-    const { access_token } = response.data
-    setToken(access_token)
-    localStorage.setItem('token', access_token)
-    api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
-    await fetchMe()
-  }
-
-  const fetchMe = async () => {
-    try {
-      const response = await api.get('/auth/me')
-      const userData = response.data
-      setUser(userData)
-      localStorage.setItem('user', JSON.stringify(userData))
-    } catch {
-      logout()
-    }
-  }
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null)
     setToken(null)
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    delete api.defaults.headers.common['Authorization']
-  }
+  }, [])
+
+  const persistSession = useCallback((nextToken: string) => {
+    setToken(nextToken)
+    localStorage.setItem('token', nextToken)
+  }, [])
+
+  const persistUser = useCallback((nextUser: User) => {
+    setUser(nextUser)
+    localStorage.setItem('user', JSON.stringify(nextUser))
+  }, [])
+
+  const fetchMe = useCallback(
+    async (currentToken: string): Promise<User> => {
+      const response = await api.get<User>('/auth/me', {
+        headers: { Authorization: `Bearer ${currentToken}` },
+      })
+      persistUser(response.data)
+      return response.data
+    },
+    [persistUser],
+  )
+
+  // Re-validate a restored session before rendering protected routes.
+  useEffect(() => {
+    let cancelled = false
+
+    const restore = async () => {
+      const storedToken = localStorage.getItem('token')
+      if (!storedToken) {
+        setIsLoading(false)
+        return
+      }
+      try {
+        await fetchMe(storedToken)
+      } catch (error) {
+        const status = (error as { response?: { status?: number } })?.response?.status
+        // Only drop the session when the server rejects the token; a network blip
+        // should not log the user out of a still-valid session.
+        if (status === 401 || status === 403) logout()
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    restore()
+    return () => {
+      cancelled = true
+    }
+  }, [fetchMe, logout])
+
+  const login = useCallback(
+    async (username: string, password: string): Promise<User> => {
+      try {
+        const response = await api.post<{ access_token: string }>('/auth/login', {
+          username,
+          password,
+        })
+        persistSession(response.data.access_token)
+        return await fetchMe(response.data.access_token)
+      } catch (error) {
+        throw new Error(getErrorMessage(error, 'Login failed. Please try again.'))
+      }
+    },
+    [fetchMe, persistSession],
+  )
+
+  const register = useCallback(
+    async (username: string, email: string, password: string, role = 'customer'): Promise<User> => {
+      try {
+        const response = await api.post<{ access_token: string }>('/auth/register', {
+          username,
+          email,
+          password,
+          role,
+        })
+        persistSession(response.data.access_token)
+        return await fetchMe(response.data.access_token)
+      } catch (error) {
+        throw new Error(getErrorMessage(error, 'Registration failed. Please try again.'))
+      }
+    },
+    [fetchMe, persistSession],
+  )
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isLoading,
+        homePath: getHomePath(user?.role),
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

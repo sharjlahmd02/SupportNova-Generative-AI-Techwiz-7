@@ -1,26 +1,66 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../../lib/api'
+import { getErrorMessage } from '../../lib/errors'
+import type { Complaint } from '../../types'
+
+const OPTIONAL_TEXT_FIELDS = [
+  'customer_type',
+  'product_service',
+  'order_ref',
+  'channel',
+  'prior_complaint_ref',
+  'requested_resolution',
+] as const
+
+const EMPTY_FORM = {
+  title: '',
+  description: '',
+  customer_type: '',
+  product_service: '',
+  order_ref: '',
+  channel: 'web',
+  attachments: '',
+  prior_complaint_ref: '',
+  requested_resolution: '',
+}
 
 export function ComplaintNew() {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    customer_type: '',
-    product_service: '',
-    order_ref: '',
-    channel: 'web',
-    attachments: '',
-    prior_complaint_ref: '',
-    requested_resolution: '',
-  })
+  const [formData, setFormData] = useState({ ...EMPTY_FORM })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const buildPayload = (): Record<string, unknown> => {
+    const title = formData.title.trim()
+    const description = formData.description.trim()
+    if (!title) throw new Error('Title is required.')
+    if (!description) throw new Error('Description is required.')
+
+    const payload: Record<string, unknown> = { title, description }
+
+    for (const field of OPTIONAL_TEXT_FIELDS) {
+      const value = formData[field].trim()
+      if (value) payload[field] = value
+    }
+
+    const attachments = formData.attachments.trim()
+    if (attachments) {
+      try {
+        payload.attachments = JSON.parse(attachments)
+      } catch {
+        throw new Error('Attachments must be valid JSON, or left empty.')
+      }
+    }
+
+    return payload
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,12 +69,11 @@ export function ComplaintNew() {
     setSuccess('')
     setLoading(true)
     try {
-      const response = await api.post('/complaints', formData)
-      setSuccess('Complaint submitted successfully!')
-      setTimeout(() => navigate(`/complaints/${response.data.id}`), 1500)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to submit complaint')
-    } finally {
+      const response = await api.post<Complaint>('/complaints', buildPayload())
+      setSuccess('Complaint submitted successfully! Taking you to the complaint…')
+      setTimeout(() => navigate(`/complaints/${response.data.id}`, { replace: true }), 700)
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to submit complaint'))
       setLoading(false)
     }
   }
@@ -59,6 +98,7 @@ export function ComplaintNew() {
               value={formData.title}
               onChange={handleChange}
               required
+              maxLength={200}
               placeholder="Brief summary of the issue"
             />
           </div>
@@ -76,10 +116,21 @@ export function ComplaintNew() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem',
+            }}
+          >
             <div className="form-group">
               <label htmlFor="customer_type">Customer Type</label>
-              <select id="customer_type" name="customer_type" value={formData.customer_type} onChange={handleChange}>
+              <select
+                id="customer_type"
+                name="customer_type"
+                value={formData.customer_type}
+                onChange={handleChange}
+              >
                 <option value="">Select...</option>
                 <option value="individual">Individual</option>
                 <option value="business">Business</option>
@@ -113,7 +164,12 @@ export function ComplaintNew() {
 
             <div className="form-group">
               <label htmlFor="channel">Channel</label>
-              <select id="channel" name="channel" value={formData.channel} onChange={handleChange}>
+              <select
+                id="channel"
+                name="channel"
+                value={formData.channel}
+                onChange={handleChange}
+              >
                 <option value="web">Web</option>
                 <option value="email">Email</option>
                 <option value="phone">Phone</option>
@@ -148,7 +204,7 @@ export function ComplaintNew() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="attachments">Attachments (JSON)</label>
+            <label htmlFor="attachments">Attachments (JSON, optional)</label>
             <textarea
               id="attachments"
               name="attachments"
@@ -159,9 +215,14 @@ export function ComplaintNew() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Complaint'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Submitting...' : 'Submit Complaint'}
+            </button>
+            <Link to="/" className="btn btn-secondary">
+              Cancel
+            </Link>
+          </div>
         </form>
       </div>
     </div>

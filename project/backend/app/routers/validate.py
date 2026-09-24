@@ -24,6 +24,73 @@ from app.comparison_engine.verification_score import (
 router = APIRouter()
 
 
+def _serialize_validation(result: ValidationResult, intelligence) -> dict:
+    return {
+        "complaint_id": str(result.complaint_id),
+        "primary_issue": result.primary_issue,
+        "secondary_issue": result.secondary_issue,
+        "issue_category": result.issue_category,
+        "subcategory": result.subcategory,
+        "sentiment": result.sentiment,
+        "urgency": result.urgency,
+        "priority": result.priority,
+        "entities": result.entities or {},
+        "department": result.department,
+        "secondary_department": result.secondary_department,
+        "policy_id": result.policy_id,
+        "policy_section": result.policy_section,
+        "resolution_steps": result.resolution_steps or [],
+        "escalation_required": bool(result.escalation_required),
+        "escalation_reason": result.escalation_reason,
+        "escalation_level": result.escalation_level,
+        "response_type": result.response_type,
+        "customer_response": result.customer_response,
+        "follow_up_required": bool(result.follow_up_required),
+        "follow_up_message": result.follow_up_message,
+        "clarification_questions": result.clarification_questions or [],
+        "agent_guidance": result.agent_guidance or [],
+        "prompt_version": intelligence.prompt_version if intelligence else "n/a",
+        "model": intelligence.model if intelligence else "rule-engine",
+        "analysis_timestamp": result.created_at,
+        "verification_status": (
+            result.verification_status.value
+            if hasattr(result.verification_status, "value")
+            else result.verification_status
+        ),
+        "mismatch_reasons": result.mismatch_reasons or [],
+    }
+
+
+@router.get("/{complaint_id}/validation", response_model=ValidationSchema)
+def get_validation(
+    complaint_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Return the stored Pipeline 2 (Python rule engine) output, if it exists."""
+    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
+    if complaint is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+
+    result = (
+        db.query(ValidationResult)
+        .filter(ValidationResult.complaint_id == complaint.id)
+        .first()
+    )
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No validation yet — run the validate endpoint first",
+        )
+
+    intelligence = (
+        db.query(ComplaintIntelligence)
+        .filter(ComplaintIntelligence.complaint_id == complaint.id)
+        .first()
+    )
+    return _serialize_validation(result, intelligence)
+
+
 @router.post(
     "/{complaint_id}/validate",
     response_model=ValidationSchema,
@@ -143,33 +210,4 @@ def validate_complaint(
     db.commit()
     db.refresh(result)
 
-    return {
-        "complaint_id": str(complaint.id),
-        "primary_issue": result.primary_issue,
-        "secondary_issue": result.secondary_issue,
-        "issue_category": result.issue_category,
-        "subcategory": result.subcategory,
-        "sentiment": result.sentiment,
-        "urgency": result.urgency,
-        "priority": result.priority,
-        "entities": result.entities or {},
-        "department": result.department,
-        "secondary_department": result.secondary_department,
-        "policy_id": result.policy_id,
-        "policy_section": result.policy_section,
-        "resolution_steps": result.resolution_steps or [],
-        "escalation_required": result.escalation_required,
-        "escalation_reason": result.escalation_reason,
-        "escalation_level": result.escalation_level,
-        "response_type": result.response_type,
-        "customer_response": result.customer_response,
-        "follow_up_required": result.follow_up_required,
-        "follow_up_message": result.follow_up_message,
-        "clarification_questions": result.clarification_questions or [],
-        "agent_guidance": result.agent_guidance or [],
-        "prompt_version": intelligence.prompt_version if intelligence else "n/a",
-        "model": intelligence.model if intelligence else "rule-engine",
-        "analysis_timestamp": result.created_at,
-        "verification_status": result.verification_status.value,
-        "mismatch_reasons": result.mismatch_reasons or [],
-    }
+    return _serialize_validation(result, intelligence)

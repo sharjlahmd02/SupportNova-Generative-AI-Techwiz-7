@@ -11,26 +11,19 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 
 function App() {
-  const { user } = useAuth()
+  const { user, homePath } = useAuth()
 
   return (
     <div className="app">
       {user && <Navbar />}
       <main className="container">
         <Routes>
-          <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute allowedRoles={['customer', 'agent', 'reviewer', 'manager', 'admin']}>
-                <CustomerDashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/login" element={user ? <Navigate to={homePath} replace /> : <Login />} />
+          <Route path="/" element={<Navigate to={user ? homePath : '/login'} replace />} />
           <Route
             path="/customer/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['customer']}>
+              <ProtectedRoute allowedRoles={['customer', 'agent', 'reviewer', 'manager', 'admin']}>
                 <CustomerDashboard />
               </ProtectedRoute>
             }
@@ -62,7 +55,7 @@ function App() {
           <Route
             path="/complaints/new"
             element={
-              <ProtectedRoute allowedRoles={['customer', 'agent', 'admin']}>
+              <ProtectedRoute allowedRoles={['customer', 'agent', 'reviewer', 'manager', 'admin']}>
                 <ComplaintNew />
               </ProtectedRoute>
             }
@@ -75,7 +68,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to={user ? homePath : '/login'} replace />} />
         </Routes>
       </main>
     </div>

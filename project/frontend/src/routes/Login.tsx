@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { api } from '../lib/api'
+import { getErrorMessage } from '../lib/errors'
+import { getHomePath } from '../lib/roles'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -12,23 +13,32 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { login, register } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const sessionNotice =
+    searchParams.get('reason') === 'expired'
+      ? 'Your session expired. Please sign in again.'
+      : ''
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      if (isRegister) {
-        await register(username, email, password)
-      } else {
-        await login(username, password)
-      }
-      navigate('/')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Authentication failed')
+      const user = isRegister
+        ? await register(username, email, password)
+        : await login(username, password)
+      navigate(getHomePath(user.role), { replace: true })
+    } catch (err) {
+      setError(getErrorMessage(err, 'Authentication failed'))
     } finally {
       setLoading(false)
     }
+  }
+
+  const toggleMode = () => {
+    setIsRegister((current) => !current)
+    setError('')
   }
 
   return (
@@ -36,6 +46,7 @@ export default function Login() {
       <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
         {isRegister ? 'Register' : 'Login'} to SupportNova
       </h2>
+      {sessionNotice && <div className="alert alert-info">{sessionNotice}</div>}
       {error && <div className="alert alert-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         {isRegister && (
@@ -46,6 +57,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
           </div>
@@ -57,6 +69,7 @@ export default function Login() {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
             required
           />
         </div>
@@ -67,22 +80,22 @@ export default function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete={isRegister ? 'new-password' : 'current-password'}
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-          {loading ? 'Please wait...' : (isRegister ? 'Register' : 'Login')}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{ width: '100%' }}
+          disabled={loading}
+        >
+          {loading ? 'Please wait...' : isRegister ? 'Register' : 'Login'}
         </button>
       </form>
       <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-        {isRegister ? 'Already have an account?' : "Don't have an account?"} {' '}
-        <button
-          onClick={() => {
-            setIsRegister(!isRegister)
-            setError('')
-          }}
-          style={{ background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer' }}
-        >
+        {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+        <button type="button" onClick={toggleMode} className="link-button">
           {isRegister ? 'Login' : 'Register'}
         </button>
       </p>
