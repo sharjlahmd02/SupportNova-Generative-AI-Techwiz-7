@@ -12,6 +12,7 @@ from app.db.models import (
     VerificationStatus as DBVerificationStatus,
 )
 from app.schemas.intelligence import ValidationSchema
+from app.routers.complaints import _get_visible_complaint
 from app.security.access_control import get_current_user
 from app.python_validation.rule_checker import derive_from_rules
 from app.comparison_engine.diff import diff_pipelines
@@ -68,9 +69,7 @@ def get_validation(
     current_user: User = Depends(get_current_user),
 ):
     """Return the stored Pipeline 2 (Python rule engine) output, if it exists."""
-    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
-    if complaint is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+    complaint = _get_visible_complaint(db, complaint_id, current_user)
 
     result = (
         db.query(ValidationResult)
@@ -101,9 +100,7 @@ def validate_complaint(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
-    if complaint is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+    complaint = _get_visible_complaint(db, complaint_id, current_user)
 
     complaint_text = f"Title: {complaint.title}\nDescription: {complaint.description}"
     entities = {}

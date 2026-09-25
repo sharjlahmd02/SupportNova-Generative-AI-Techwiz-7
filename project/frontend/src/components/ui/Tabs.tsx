@@ -56,9 +56,9 @@ export function Tabs({
               }
             }}
             className={cn(
-              'relative -mb-px flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-2.5 text-sm font-medium',
-              'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-0',
-              selected ? 'text-brand-700' : 'text-muted hover:text-ink',
+              'relative -mb-px flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-3 text-sm font-medium',
+              'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-0',
+              selected ? 'text-ink' : 'text-muted hover:text-ink',
             )}
           >
             {item.label}
@@ -67,7 +67,7 @@ export function Tabs({
               aria-hidden="true"
               className={cn(
                 'absolute inset-x-0 bottom-0 h-0.5 rounded-t',
-                selected ? 'bg-brand-600' : 'bg-transparent',
+                selected ? 'bg-ink' : 'bg-transparent',
               )}
             />
           </button>

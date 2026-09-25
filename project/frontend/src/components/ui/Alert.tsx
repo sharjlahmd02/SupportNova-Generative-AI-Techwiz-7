@@ -40,7 +40,11 @@ export function Alert({
   return (
     <div
       role={tone === 'error' ? 'alert' : 'status'}
-      className={cn('flex items-start gap-2.5 rounded-lg border px-3 py-2.5 text-sm', TONES[tone], className)}
+      className={cn(
+        'flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-sm',
+        TONES[tone],
+        className,
+      )}
     >
       {ICONS[tone]}
       <div className="min-w-0 flex-1">

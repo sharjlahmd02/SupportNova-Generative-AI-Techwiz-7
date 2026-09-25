@@ -50,7 +50,7 @@ function Breakdown({ title, values }: { title: string; values: Record<string, nu
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-canvas">
                   <div
-                    className="h-full rounded-full bg-brand-500 transition-all"
+                    className="h-full rounded-full bg-ink transition-all"
                     style={{ width: `${max > 0 ? Math.round((count / max) * 100) : 0}%` }}
                     aria-hidden="true"
                   />
@@ -114,7 +114,7 @@ export function AdminDashboard() {
           <>
             <Link
               to="/reviewer/queue"
-              className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+              className="inline-flex h-11 items-center rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-border-strong hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
             >
               Review queue
             </Link>
@@ -267,7 +267,7 @@ export function AdminDashboard() {
                     <Td className="text-right">
                       <Link
                         to={`/complaints/${complaint.id}`}
-                        className="font-medium text-brand-600 hover:text-brand-700 hover:underline"
+                        className="font-medium text-ink underline-offset-4 hover:underline"
                       >
                         Open
                       </Link>

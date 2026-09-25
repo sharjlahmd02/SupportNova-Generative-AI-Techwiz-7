@@ -14,3 +14,10 @@ export type { TabItem } from './Tabs'
 export { PageHeader } from './PageHeader'
 export { ConfirmDialog, Modal } from './Modal'
 export { ToastProvider, useToast } from './Toast'
+export {
+  ACCEPT_HINT,
+  MAX_ATTACHMENTS,
+  MAX_UPLOAD_BYTES,
+  ACCEPTED_EXTENSIONS,
+  FileDropzone,
+} from './FileDropzone'

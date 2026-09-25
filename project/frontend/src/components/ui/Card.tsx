@@ -13,7 +13,7 @@ export function Card({
   return (
     <section
       className={cn(
-        'rounded-lg border border-border bg-surface shadow-card',
+        'rounded-xl border border-border bg-surface shadow-card',
         padded && 'p-4 sm:p-5',
         className,
       )}
@@ -37,12 +37,12 @@ export function CardHeader({
   return (
     <header
       className={cn(
-        'flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3',
+        'flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3.5',
         className,
       )}
     >
       <div className="min-w-0">
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
+        <h2 className="text-[15px] font-semibold tracking-tight text-ink">{title}</h2>
         {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -77,24 +77,29 @@ export function StatCard({
         : tone === 'danger'
           ? 'bg-danger-bg text-danger'
           : tone === 'neutral'
-            ? 'bg-slate-100 text-slate-600'
-            : 'bg-brand-50 text-brand-600'
+            ? 'bg-brand-50 text-ink-soft'
+            : 'bg-ink text-white'
 
   return (
     <Card className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted line-clamp-2">
+        <p className="text-[11px] font-semibold uppercase leading-snug tracking-wider text-muted line-clamp-2">
           {label}
         </p>
         {loading ? (
           <div className="mt-2 h-8 w-16 animate-pulse rounded bg-border/70" aria-hidden="true" />
         ) : (
-          <p className="mt-1 text-2xl font-bold tabular-nums text-ink">{value}</p>
+          <p className="mt-1.5 text-[28px] font-semibold leading-none tracking-tight tabular-nums text-ink">
+            {value}
+          </p>
         )}
-        {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+        {hint && <p className="mt-2 text-xs text-muted">{hint}</p>}
       </div>
       {icon && (
-        <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', accent)} aria-hidden="true">
+        <span
+          className={cn('grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-inset ring-black/5', accent)}
+          aria-hidden="true"
+        >
           {icon}
         </span>
       )}

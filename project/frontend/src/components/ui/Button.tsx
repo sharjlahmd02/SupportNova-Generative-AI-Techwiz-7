@@ -6,16 +6,17 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 export type ButtonSize = 'sm' | 'md'
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-700 shadow-sm',
-  secondary: 'bg-surface text-ink border border-border hover:bg-canvas active:bg-border/60',
-  ghost: 'text-muted hover:text-ink hover:bg-canvas',
+  primary: 'bg-ink text-white hover:bg-ink/85 active:bg-ink/90 shadow-sm',
+  secondary:
+    'bg-surface text-ink border border-border hover:border-border-strong hover:bg-brand-50 active:bg-brand-100',
+  ghost: 'text-muted hover:text-ink hover:bg-brand-50 active:bg-brand-100',
   danger: 'bg-danger text-white hover:bg-danger-dark active:bg-danger-dark shadow-sm',
 }
 
 const SIZES: Record<ButtonSize, string> = {
   // 44px minimum tap target (design.md §10.4 rule 7)
   md: 'h-11 px-4 text-sm',
-  sm: 'h-9 px-3 text-xs',
+  sm: 'h-9 px-3 text-[13px]',
 }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -35,9 +36,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={rest.type ?? 'button'}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap',
-        'transition-colors select-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-1 focus-visible:ring-offset-canvas',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap',
+        'transition-colors duration-150 select-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
         'disabled:opacity-50 disabled:pointer-events-none',
         VARIANTS[variant],
         SIZES[size],
@@ -61,8 +62,8 @@ export function LinkButton({
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-1 rounded text-brand-600 font-medium hover:text-brand-700 hover:underline',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
+        'inline-flex items-center gap-1 rounded text-ink font-semibold underline-offset-4 hover:underline',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30',
         className,
       )}
       {...rest}

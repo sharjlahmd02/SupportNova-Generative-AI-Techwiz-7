@@ -180,7 +180,7 @@ export function ReviewerQueue() {
             action={
               <Link
                 to="/complaints/new"
-                className="inline-flex h-9 items-center rounded-md bg-brand-600 px-3 text-xs font-medium text-white hover:bg-brand-700"
+                className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[13px] font-medium text-white hover:bg-ink/85"
               >
                 Submit a test complaint
               </Link>
@@ -214,7 +214,7 @@ export function ReviewerQueue() {
                 </div>
                 <Link
                   to={`/complaints/${reviewCase.complaint_id}`}
-                  className="text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline"
+                  className="text-sm font-medium text-ink underline-offset-4 hover:underline"
                 >
                   Open complaint
                 </Link>

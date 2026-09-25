@@ -271,7 +271,7 @@ export function AgentDashboard() {
                     <Td className="text-right">
                       <Link
                         to={`/complaints/${complaint.id}`}
-                        className="font-medium text-brand-600 hover:text-brand-700 hover:underline"
+                        className="font-medium text-ink underline-offset-4 hover:underline"
                       >
                         Open
                       </Link>

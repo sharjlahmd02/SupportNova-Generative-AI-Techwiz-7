@@ -104,7 +104,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="-m-1 shrink-0 rounded p-1 text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            className="-m-1 shrink-0 rounded-lg p-1.5 text-muted transition-colors hover:bg-brand-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
           >
             <X className="size-4" aria-hidden="true" />
           </button>

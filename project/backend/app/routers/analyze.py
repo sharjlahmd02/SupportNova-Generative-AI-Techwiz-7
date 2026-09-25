@@ -5,7 +5,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.db.models import User, Complaint, ComplaintIntelligence, ComplaintStatus, KnowledgeDocument, Chunk
+from app.db.models import (
+    User,
+    Complaint,
+    ComplaintIntelligence,
+    ComplaintStatus,
+    ComplaintMessage,
+    ComplaintEvent,
+    KnowledgeDocument,
+    Chunk,
+)
+from app.routers.complaints import _get_visible_complaint
 from app.schemas.intelligence import IntelligenceSchema
 from app.security.access_control import get_current_user
 from app.genai_pipeline.prompt_builder import build_analysis_prompt
@@ -69,9 +79,7 @@ def get_analysis(
     current_user: User = Depends(get_current_user),
 ):
     """Return the stored Pipeline 1 (Gemini) output for a complaint, if it exists."""
-    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
-    if complaint is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+    complaint = _get_visible_complaint(db, complaint_id, current_user)
 
     intelligence = (
         db.query(ComplaintIntelligence)
@@ -96,9 +104,7 @@ def analyze_complaint(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
-    if complaint is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+    complaint = _get_visible_complaint(db, complaint_id, current_user)
 
     complaint_text = sanitize_for_prompt(
         f"Title: {complaint.title}\nDescription: {complaint.description}"
@@ -170,7 +176,43 @@ def analyze_complaint(
         db.flush()
 
     db.add(intelligence)
-    complaint.status = ComplaintStatus.analyzed
+    questions = list(data.get("clarification_questions") or [])
+    previous_status = complaint.status.value if complaint.status else None
+    # SRS §4.3 / §5.3 — missing information is *asked for*, never assumed.
+    complaint.status = (
+        ComplaintStatus.awaiting_customer if questions else ComplaintStatus.analyzed
+    )
+    db.add(
+        ComplaintEvent(
+            complaint_id=complaint.id,
+            event_type="status",
+            label="GenAI analysis completed",
+            detail={"from": previous_status, "to": complaint.status.value},
+            actor=current_user.username,
+        )
+    )
+    if questions:
+        db.add(
+            ComplaintMessage(
+                complaint_id=complaint.id,
+                author_id=current_user.id,
+                author_name="SupportNova analysis",
+                author_role="agent",
+                kind="clarification",
+                body="\n".join(
+                    f"{index + 1}. {question}" for index, question in enumerate(questions)
+                ),
+            )
+        )
+        db.add(
+            ComplaintEvent(
+                complaint_id=complaint.id,
+                event_type="status",
+                label="More information requested",
+                detail={"to": "Awaiting Customer", "questions": questions},
+                actor=current_user.username,
+            )
+        )
     db.commit()
     db.refresh(intelligence)
 

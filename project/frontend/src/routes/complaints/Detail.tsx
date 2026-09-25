@@ -1,25 +1,48 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   ArrowLeft,
+  CheckCircle2,
+  Download,
   FilePlus2,
   GitCompare,
   History,
+  MessageSquare,
+  Paperclip,
   RefreshCw,
+  RotateCcw,
+  Send,
   Sparkles,
 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
 import { getErrorMessage } from '../../lib/errors'
 import {
+  attachmentList,
+  channelLabel,
+  complaintReference,
+  contactLabel,
+  customerTypeLabel,
   formatDate,
+  formatBytes,
   priorityTone,
+  sanitizeInput,
+  slaFor,
   statusTone,
   urgencyTone,
   verificationLabel,
   verificationTone,
 } from '../../lib/format'
-import type { Complaint, PipelineResult, ReviewCase, ValidationResult } from '../../types'
+import type {
+  Complaint,
+  ComplaintEvent,
+  ComplaintMessage,
+  PipelineResult,
+  ReviewCase,
+  StoredAttachment,
+  ValidationResult,
+} from '../../types'
 import {
   Alert,
   Badge,
@@ -33,11 +56,13 @@ import {
   Table,
   TBody,
   Td,
+  Textarea,
   Th,
   THead,
   Tabs,
   Tr,
   useToast,
+  type TabItem,
 } from '../../components/ui'
 
 async function getOptional<T>(path: string): Promise<T | null> {
@@ -62,6 +87,13 @@ const COMPARED_FIELDS: Array<{ key: keyof PipelineResult; label: string }> = [
   { key: 'priority', label: 'Priority' },
   { key: 'escalation_level', label: 'Escalation level' },
 ]
+
+const MESSAGE_KIND_LABELS: Record<string, string> = {
+  clarification: 'Clarification requested',
+  reply: 'Customer reply',
+  response: 'Official response',
+  system: 'System',
+}
 
 function PipelinePanel({
   title,
@@ -149,70 +181,96 @@ function PipelinePanel({
 
 export function ComplaintDetail() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const { toast } = useToast()
+  const isCustomer = user?.role === 'customer'
+
   const [complaint, setComplaint] = useState<Complaint | null>(null)
   const [analysis, setAnalysis] = useState<PipelineResult | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [reviewCase, setReviewCase] = useState<ReviewCase | null>(null)
+  const [messages, setMessages] = useState<ComplaintMessage[]>([])
+  const [events, setEvents] = useState<ComplaintEvent[]>([])
+  const [replyBody, setReplyBody] = useState('')
+  const [sending, setSending] = useState(false)
+  const [action, setAction] = useState<'accept' | 'reopen' | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [running, setRunning] = useState<'analyze' | 'validate' | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const autoRan = useRef(false)
 
   const load = useCallback(async () => {
     if (!id) return
     setLoading(true)
     setLoadError('')
 
-    const results = await Promise.allSettled([
+    const requests: Promise<unknown>[] = [
       api.get<Complaint>(`/complaints/${id}`),
       getOptional<PipelineResult>(`/complaints/${id}/analysis`),
       getOptional<ValidationResult>(`/complaints/${id}/validation`),
-      api.get<ReviewCase[]>('/review/queue'),
-    ])
+      getOptional<ComplaintMessage[]>(`/complaints/${id}/messages`),
+      getOptional<ComplaintEvent[]>(`/complaints/${id}/events`),
+    ]
+    if (!isCustomer) requests.push(getOptional<ReviewCase[]>('/review/queue'))
 
-    const [complaintResult, analysisResult, validationResult, queueResult] = results
+    const results = await Promise.allSettled(requests)
+    const [complaintResult, analysisResult, validationResult, messageResult, eventResult, queueResult] = results
 
     if (complaintResult.status === 'fulfilled') {
-      setComplaint(complaintResult.value.data)
+      setComplaint((complaintResult.value as { data: Complaint }).data)
     } else {
       setComplaint(null)
       setLoadError(getErrorMessage(complaintResult.reason, 'Failed to load complaint'))
     }
 
-    if (analysisResult.status === 'fulfilled') {
-      setAnalysis(analysisResult.value)
-    } else {
-      setAnalysis(null)
+    if (analysisResult.status === 'fulfilled') setAnalysis(analysisResult.value as PipelineResult | null)
+    else
       setLoadError((current) =>
         current || getErrorMessage(analysisResult.reason, 'Failed to load GenAI analysis'),
       )
-    }
 
-    if (validationResult.status === 'fulfilled') {
-      setValidation(validationResult.value)
-    } else {
-      setValidation(null)
+    if (validationResult.status === 'fulfilled')
+      setValidation(validationResult.value as ValidationResult | null)
+    else
       setLoadError((current) =>
         current || getErrorMessage(validationResult.reason, 'Failed to load validation result'),
       )
-    }
 
-    if (queueResult.status === 'fulfilled') {
-      const match = queueResult.value.data.find(
-        (item) => String(item.complaint_id) === String(id),
-      )
-      setReviewCase(match ?? null)
+    setMessages(
+      messageResult.status === 'fulfilled' ? ((messageResult.value as ComplaintMessage[] | null) ?? []) : [],
+    )
+    setEvents(eventResult.status === 'fulfilled' ? ((eventResult.value as ComplaintEvent[] | null) ?? []) : [])
+
+    if (queueResult && queueResult.status === 'fulfilled') {
+      const queue = (queueResult.value as ReviewCase[] | null) ?? []
+      setReviewCase(queue.find((item) => String(item.complaint_id) === String(id)) ?? null)
     } else {
       setReviewCase(null)
     }
 
     setLoading(false)
-  }, [id])
+  }, [id, isCustomer])
 
   useEffect(() => {
     load()
   }, [load])
+
+  // Customers never press "run analysis" themselves — the platform processes the
+  // ticket as soon as it is opened, so the official response appears on its own.
+  useEffect(() => {
+    if (autoRan.current || loading || !isCustomer) return
+    if (!complaint || complaint.status !== 'New' || analysis) return
+    autoRan.current = true
+    void (async () => {
+      try {
+        await api.post(`/complaints/${id}/analyze`)
+        await load()
+      } catch {
+        /* the GenAI key may not be configured — leave the ticket as New */
+      }
+    })()
+  }, [loading, isCustomer, complaint, analysis, id, load])
 
   const runPipeline = async (pipeline: 'analyze' | 'validate') => {
     if (!id) return
@@ -242,6 +300,73 @@ export function ComplaintDetail() {
     }
   }
 
+  const sendReply = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!id) return
+    const body = sanitizeInput(replyBody, 4000)
+    if (!body) return
+
+    setSending(true)
+    try {
+      await api.post(`/complaints/${id}/messages`, {
+        body,
+        kind: isCustomer ? 'reply' : 'response',
+      })
+      setReplyBody('')
+      toast({ tone: 'success', title: 'Message sent', description: 'Your reply is now on the ticket.' })
+      await load()
+    } catch (error) {
+      toast({ tone: 'error', title: 'Could not send the message', description: getErrorMessage(error) })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const runAction = async (kind: 'accept' | 'reopen') => {
+    if (!id) return
+    setAction(kind)
+    try {
+      const response = await api.post<Complaint>(`/complaints/${id}/${kind === 'accept' ? 'accept' : 'reopen'}`)
+      setComplaint(response.data)
+      toast({
+        tone: 'success',
+        title: kind === 'accept' ? 'Resolution accepted' : 'Complaint reopened',
+        description:
+          kind === 'accept'
+            ? 'Thank you — the ticket is now closed.'
+            : 'We will pick this up again and keep you posted.',
+      })
+      await load()
+    } catch (error) {
+      toast({
+        tone: 'error',
+        title: kind === 'accept' ? 'Could not accept the resolution' : 'Could not reopen the ticket',
+        description: getErrorMessage(error),
+      })
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const downloadAttachment = async (file: StoredAttachment) => {
+    if (!id) return
+    try {
+      const response = await api.get(`/complaints/${id}/attachments/${encodeURIComponent(file.filename)}`, {
+        responseType: 'blob',
+      })
+      const url = URL.createObjectURL(response.data)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = file.original_name
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      toast({ tone: 'error', title: 'Download failed', description: getErrorMessage(error) })
+    }
+  }
+
   if (loading) {
     return (
       <div className="grid gap-4 lg:grid-cols-2">
@@ -263,7 +388,7 @@ export function ComplaintDetail() {
             </Button>
             <Link
               to="/"
-              className="inline-flex h-9 items-center rounded-md bg-brand-600 px-3 text-xs font-medium text-white hover:bg-brand-700"
+              className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[13px] font-medium text-white hover:bg-ink/85"
             >
               Back to dashboard
             </Link>
@@ -279,21 +404,42 @@ export function ComplaintDetail() {
     return <Alert tone="error" title="Complaint not found">This complaint does not exist or you cannot view it.</Alert>
   }
 
-  const tabs = [
+  const sla = slaFor(complaint)
+  const attachments = attachmentList(complaint.attachments)
+  const unresolvedQuestions = complaint.clarification_questions ?? []
+  const needsClarification =
+    complaint.status === 'Awaiting Customer' || unresolvedQuestions.length > 0
+  const resolutionSteps = complaint.resolution_steps ?? []
+  const officialMessage = complaint.customer_response || complaint.follow_up_message || ''
+  const hasOfficialResponse =
+    Boolean(officialMessage) || resolutionSteps.length > 0 || Boolean(complaint.follow_up_message)
+
+  const tabs: TabItem[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'pipeline1', label: 'Pipeline 1 · GenAI' },
-    { id: 'pipeline2', label: 'Pipeline 2 · Python' },
     {
-      id: 'comparison',
-      label: 'Comparison',
-      badge: validation ? (
-        <Badge tone={verificationTone(validation.verification_status)}>
-          {verificationLabel(validation.verification_status)}
-        </Badge>
-      ) : undefined,
+      id: 'conversation',
+      label: 'Conversation',
+      badge: needsClarification ? <Badge tone="warn">Action needed</Badge> : undefined,
     },
-    { id: 'audit', label: 'Audit trail' },
+    { id: 'history', label: 'History' },
+    ...(isCustomer
+      ? []
+      : [
+          { id: 'pipeline1', label: 'Pipeline 1 · GenAI' },
+          { id: 'pipeline2', label: 'Pipeline 2 · Python' },
+          {
+            id: 'comparison',
+            label: 'Comparison',
+            badge: validation ? (
+              <Badge tone={verificationTone(validation.verification_status)}>
+                {verificationLabel(validation.verification_status)}
+              </Badge>
+            ) : undefined,
+          },
+          { id: 'audit', label: 'Audit trail' },
+        ]),
   ]
+  const visibleTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : 'overview'
 
   return (
     <div className="space-y-6">
@@ -307,76 +453,338 @@ export function ComplaintDetail() {
 
       <PageHeader
         title={complaint.title}
-        description={`Complaint #${complaint.id} · submitted ${formatDate(
+        description={`${complaintReference(complaint)} · submitted ${formatDate(
           complaint.date || complaint.created_at,
-        )}`}
+        )}${complaint.department ? ` · ${complaint.department}` : ''}`}
         meta={
           <>
             <Badge tone={statusTone(complaint.status)}>{complaint.status}</Badge>
+            <Badge tone={sla.tone} title={sla.due_at.toLocaleString()}>
+              {sla.label}
+            </Badge>
             {complaint.priority && <Badge tone={priorityTone(complaint.priority)}>{complaint.priority}</Badge>}
-            {complaint.verification_status && (
+            {complaint.verification_status && !isCustomer && (
               <Badge tone={verificationTone(complaint.verification_status)}>
                 {verificationLabel(complaint.verification_status)}
               </Badge>
             )}
             {complaint.escalation_required && <Badge tone="danger">Escalation required</Badge>}
+            {complaint.resolution_accepted_at && (
+              <Badge tone="success">Accepted {formatDate(complaint.resolution_accepted_at)}</Badge>
+            )}
+            {complaint.duplicate_of && (
+              <Badge tone="neutral">Linked to #{complaint.duplicate_of}</Badge>
+            )}
           </>
         }
         actions={
-          <Link
-            to="/complaints/new"
-            className="inline-flex h-11 items-center gap-2 rounded-md border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-canvas"
-          >
-            <FilePlus2 className="size-4" aria-hidden="true" />
-            New complaint
-          </Link>
+          <>
+            {complaint.status === 'Resolved' && (
+              <Button
+                icon={<CheckCircle2 className="size-4" />}
+                loading={action === 'accept'}
+                disabled={action !== null}
+                onClick={() => runAction('accept')}
+              >
+                Accept &amp; confirm resolution
+              </Button>
+            )}
+            {complaint.status === 'Closed' && (
+              <Button
+                variant="secondary"
+                icon={<RotateCcw className="size-4" />}
+                loading={action === 'reopen'}
+                disabled={action !== null}
+                onClick={() => runAction('reopen')}
+              >
+                Reopen complaint
+              </Button>
+            )}
+            <Link
+              to="/complaints/new"
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-border-strong hover:bg-brand-50"
+            >
+              <FilePlus2 className="size-4" aria-hidden="true" />
+              New complaint
+            </Link>
+          </>
         }
       />
 
       {loadError && <Alert tone="warn" onDismiss={() => setLoadError('')}>{loadError}</Alert>}
 
-      <Tabs items={tabs} active={activeTab} onChange={setActiveTab} />
+      <Tabs items={tabs} active={visibleTab} onChange={setActiveTab} />
 
-      {activeTab === 'overview' && (
+      {visibleTab === 'overview' && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card padded={false}>
             <CardHeader className="px-4 py-3.5 sm:px-5" title="Complaint details" />
             <div className="p-4 sm:p-5">
               <dl>
-                <KeyValue label="ID" value={`#${complaint.id}`} />
-                <KeyValue label="Customer type" value={complaint.customer_type || '—'} />
+                <KeyValue label="Reference" value={complaintReference(complaint)} />
+                <KeyValue label="Customer type" value={customerTypeLabel(complaint.customer_type)} />
                 <KeyValue label="Product / service" value={complaint.product_service || '—'} />
                 <KeyValue label="Order reference" value={complaint.order_ref || '—'} />
-                <KeyValue label="Channel" value={complaint.channel || '—'} />
+                <KeyValue label="Submission channel" value={channelLabel(complaint.channel)} />
+                <KeyValue label="Preferred contact" value={contactLabel(complaint.preferred_contact)} />
+                <KeyValue
+                  label="Prior complaint"
+                  value={complaint.prior_complaint_ref || '—'}
+                />
                 <KeyValue label="Submitted" value={formatDate(complaint.date || complaint.created_at)} />
+                <KeyValue label="Last update" value={formatDate(complaint.updated_at)} />
                 <KeyValue label="Department" value={complaint.department || '—'} />
                 <KeyValue label="Category" value={complaint.category || '—'} />
                 <KeyValue label="Sentiment" value={complaint.sentiment || '—'} />
-                <KeyValue label="Escalation" value={complaint.escalation_required ? 'Yes' : 'No'} />
+                <KeyValue
+                  label="Resolution accepted"
+                  value={complaint.resolution_accepted_at ? formatDate(complaint.resolution_accepted_at) : '—'}
+                />
               </dl>
             </div>
           </Card>
 
-          <Card padded={false}>
-            <CardHeader className="px-4 py-3.5 sm:px-5" title="Description" />
-            <div className="space-y-4 p-4 sm:p-5">
-              <p className="whitespace-pre-wrap text-sm text-ink-soft">{complaint.description}</p>
-              {complaint.requested_resolution && (
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    Requested resolution
-                  </p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-ink-soft">
-                    {complaint.requested_resolution}
-                  </p>
+          <div className="space-y-4">
+            <Card padded={false}>
+              <CardHeader
+                className="px-4 py-3.5 sm:px-5"
+                title="Description"
+                description="Exactly what you submitted — inputs are sanitised and whitespace is normalised."
+              />
+              <div className="space-y-4 p-4 sm:p-5">
+                <p className="whitespace-pre-wrap text-sm text-ink-soft">{complaint.description}</p>
+                {complaint.requested_resolution && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Requested resolution
+                    </p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-ink-soft">
+                      {complaint.requested_resolution}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card padded={false}>
+              <CardHeader
+                className="px-4 py-3.5 sm:px-5"
+                title="Supporting documents"
+                description={`${attachments.length} file${attachments.length === 1 ? '' : 's'} attached.`}
+              />
+              <div className="p-4 sm:p-5">
+                {attachments.length === 0 ? (
+                  <p className="text-sm text-muted">No attachments on this complaint.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {attachments.map((file) => (
+                      <li
+                        key={file.filename}
+                        className="flex items-center gap-3 rounded-lg border border-border bg-canvas px-3 py-2"
+                      >
+                        <Paperclip className="size-4 shrink-0 text-muted" aria-hidden="true" />
+                        <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                          {file.original_name}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted">
+                          {file.size ? formatBytes(file.size) : ''}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          icon={<Download className="size-4" />}
+                          onClick={() => downloadAttachment(file)}
+                        >
+                          Download
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {visibleTab === 'conversation' && (
+        <div className="space-y-4">
+          {needsClarification && unresolvedQuestions.length > 0 && (
+            <Alert tone="warn" title="More information needed to proceed">
+              <p>To keep this complaint moving, please answer the following:</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-5">
+                {unresolvedQuestions.map((question, index) => (
+                  <li key={index}>{question}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
+          {hasOfficialResponse ? (
+            <Card padded={false}>
+              <CardHeader
+                className="px-4 py-3.5 sm:px-5"
+                title="Official response"
+                description="Professional, policy-compliant resolution from SupportNova."
+                actions={
+                  <Badge tone={statusTone(complaint.status)}>{complaint.status}</Badge>
+                }
+              />
+              <div className="space-y-5 p-4 sm:p-5">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
+                  {officialMessage}
+                </p>
+
+                {resolutionSteps.length > 0 && (
+                  <section>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Actionable next steps
+                    </h3>
+                    <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-ink-soft">
+                      {resolutionSteps.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
+
+                {complaint.follow_up_message && complaint.customer_response && (
+                  <Alert tone="info" title="Follow-up">
+                    {complaint.follow_up_message}
+                  </Alert>
+                )}
+
+                <div className="flex flex-wrap gap-3 border-t border-border pt-4">
+                  {complaint.status === 'Resolved' && (
+                    <Button
+                      icon={<CheckCircle2 className="size-4" />}
+                      loading={action === 'accept'}
+                      disabled={action !== null}
+                      onClick={() => runAction('accept')}
+                    >
+                      Accept &amp; confirm resolution
+                    </Button>
+                  )}
+                  {(complaint.status === 'Closed' || complaint.status === 'Resolved') && (
+                    <Button
+                      variant="secondary"
+                      icon={<RotateCcw className="size-4" />}
+                      loading={action === 'reopen'}
+                      disabled={action !== null}
+                      onClick={() => runAction('reopen')}
+                    >
+                      Reopen complaint
+                    </Button>
+                  )}
                 </div>
+              </div>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={<MessageSquare className="size-5" />}
+              title="No official response yet"
+              description="Your complaint is being analysed. As soon as a resolution is approved you will see the response, the next steps and any follow-up here."
+            />
+          )}
+
+          <Card padded={false}>
+            <CardHeader
+              className="px-4 py-3.5 sm:px-5"
+              title="Message thread"
+              description="Every clarification, reply and response on this ticket, oldest first."
+            />
+            <div className="space-y-4 p-4 sm:p-5">
+              {messages.length === 0 ? (
+                <p className="text-sm text-muted">No messages yet.</p>
+              ) : (
+                <ol className="space-y-3">
+                  {messages.map((message) => (
+                    <li key={message.id} className="rounded-lg border border-border bg-canvas p-3.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-ink">{message.author_name}</span>
+                        <Badge tone={message.kind === 'clarification' ? 'warn' : message.kind === 'response' ? 'brand' : 'neutral'}>
+                          {MESSAGE_KIND_LABELS[message.kind] ?? message.kind}
+                        </Badge>
+                        <span className="ml-auto text-xs text-muted">
+                          {formatDate(message.created_at)}
+                        </span>
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{message.body}</p>
+                    </li>
+                  ))}
+                </ol>
               )}
+
+              <form onSubmit={sendReply} className="space-y-3 border-t border-border pt-4">
+                <Textarea
+                  label={isCustomer ? 'Your reply' : 'Send an official response'}
+                  rows={4}
+                  placeholder={
+                    isCustomer
+                      ? 'Answer the clarification or add anything that helps us resolve this…'
+                      : 'Write the response the customer should see…'
+                  }
+                  hint="Inputs are sanitised and whitespace is normalised before they are stored."
+                  value={replyBody}
+                  onChange={(event) => setReplyBody(event.target.value)}
+                />
+                <Button
+                  type="submit"
+                  loading={sending}
+                  disabled={!replyBody.trim()}
+                  icon={<Send className="size-4" />}
+                >
+                  {isCustomer ? 'Send reply' : 'Send response'}
+                </Button>
+              </form>
             </div>
           </Card>
         </div>
       )}
 
-      {activeTab === 'pipeline1' && (
+      {visibleTab === 'history' && (
+        <Card padded={false}>
+          <CardHeader
+            className="px-4 py-3.5 sm:px-5"
+            title="Complaint history"
+            description="Every lifecycle change recorded against this ticket, newest first."
+          />
+          <div className="p-4 sm:p-5">
+            {events.length === 0 ? (
+              <EmptyState
+                icon={<History className="size-5" />}
+                title="No history recorded yet"
+                description="Lifecycle events appear here as soon as the ticket moves."
+                compact
+              />
+            ) : (
+              <ol className="relative space-y-5 border-l border-border pl-5">
+                {[...events].reverse().map((event) => (
+                  <li key={event.id} className="relative">
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-[27px] top-1.5 size-3 rounded-full bg-ink ring-4 ring-surface"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-ink">{event.label}</span>
+                      <Badge tone="neutral">{event.event_type}</Badge>
+                      <span className="ml-auto text-xs text-muted">{formatDate(event.created_at)}</span>
+                    </div>
+                    {event.actor && <p className="mt-0.5 text-xs text-muted">by {event.actor}</p>}
+                    {event.detail && (
+                      <pre className="mt-1.5 max-h-40 overflow-auto rounded-md bg-canvas p-2.5 text-xs text-ink-soft">
+                        {JSON.stringify(event.detail, null, 2)}
+                      </pre>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {visibleTab === 'pipeline1' && (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -405,7 +813,7 @@ export function ComplaintDetail() {
         </div>
       )}
 
-      {activeTab === 'pipeline2' && (
+      {visibleTab === 'pipeline2' && (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -431,7 +839,7 @@ export function ComplaintDetail() {
         </div>
       )}
 
-      {activeTab === 'comparison' && (
+      {visibleTab === 'comparison' && (
         <div className="space-y-4">
           {!analysis || !validation ? (
             <EmptyState
@@ -515,7 +923,7 @@ export function ComplaintDetail() {
         </div>
       )}
 
-      {activeTab === 'audit' && (
+      {visibleTab === 'audit' && (
         <div className="space-y-4">
           {!reviewCase ? (
             <EmptyState

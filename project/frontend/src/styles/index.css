@@ -3,53 +3,57 @@
 /*
   SupportNova design tokens — design.md §10.1
   Single stylesheet in the app. No component CSS lives here.
+
+  Theme: monochrome (black / white / neutral greys). Colour is reserved for
+  status semantics only (success / warn / danger / info), so a green pill or a
+  red banner always means something.
 */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Surfaces */
-  --color-canvas: #f8fafc;
+  /* Surfaces — neutral greys, no colour cast */
+  --color-canvas: #fafafa;
   --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  --color-border: #e6e6e6;
+  --color-border-strong: #d1d1d1;
 
   /* Ink */
-  --color-ink: #0f172a;
-  --color-ink-soft: #334155;
-  --color-muted: #64748b;
-  --color-faint: #94a3b8;
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #3f3f46;
+  --color-muted: #71717a;
+  --color-faint: #a1a1aa;
 
-  /* Brand */
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  /* Brand — monochrome scale, black is the accent */
+  --color-brand-50: #f4f4f5;
+  --color-brand-100: #ebebec;
+  --color-brand-200: #d4d4d8;
+  --color-brand-500: #3f3f46;
+  --color-brand-600: #18181b;
+  --color-brand-700: #000000;
 
   /* Status semantics — one palette, used by Badge everywhere */
-  --color-success: #16a34a;
+  --color-success: #15803d;
   --color-success-bg: #f0fdf4;
   --color-success-border: #bbf7d0;
 
-  --color-warn: #d97706;
+  --color-warn: #b45309;
   --color-warn-bg: #fffbeb;
   --color-warn-border: #fde68a;
 
-  --color-danger: #dc2626;
-  --color-danger-dark: #b91c1c;
+  --color-danger: #b91c1c;
+  --color-danger-dark: #991b1b;
   --color-danger-bg: #fef2f2;
   --color-danger-border: #fecaca;
 
-  --color-info: #2563eb;
+  --color-info: #1d4ed8;
   --color-info-bg: #eff6ff;
   --color-info-border: #bfdbfe;
 
-  /* Elevation */
-  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-  --shadow-pop: 0 10px 30px -12px rgb(15 23 42 / 0.28);
+  /* Elevation — pure black alpha, never tinted */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  --shadow-pop: 0 24px 48px -16px rgb(0 0 0 / 0.24), 0 0 0 1px rgb(0 0 0 / 0.04);
 
   /* Sidebar width */
   --spacing-sidebar: 16rem;
@@ -72,6 +76,8 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
   }
 
   body {
@@ -80,7 +86,8 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.55;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -102,11 +109,26 @@
     margin: 0;
   }
 
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
   button,
   input,
   select,
   textarea {
     font: inherit;
+    letter-spacing: inherit;
     color: inherit;
   }
 
@@ -119,9 +141,51 @@
     text-decoration: none;
   }
 
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-surface);
+  }
+
   /* Visible keyboard focus everywhere, without mouse-click rings */
   :focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-ink);
     outline-offset: 2px;
+  }
+
+  /* Refined, unobtrusive scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

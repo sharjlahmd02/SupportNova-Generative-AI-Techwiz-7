@@ -26,7 +26,7 @@ export function Th({ className, children, ...rest }: ThHTMLAttributes<HTMLTableC
     <th
       scope="col"
       className={cn(
-        'px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-muted',
+        'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted',
         className,
       )}
       {...rest}
@@ -38,12 +38,12 @@ export function Th({ className, children, ...rest }: ThHTMLAttributes<HTMLTableC
 
 export function Td({ className, children, ...rest }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={cn('px-3 py-2.5 align-middle text-ink-soft', className)} {...rest}>
+    <td className={cn('px-4 py-3 align-middle text-ink-soft', className)} {...rest}>
       {children}
     </td>
   )
 }
 
 export function Tr({ className, children }: { className?: string; children: ReactNode }) {
-  return <tr className={cn('transition-colors hover:bg-canvas', className)}>{children}</tr>
+  return <tr className={cn('transition-colors hover:bg-brand-50', className)}>{children}</tr>
 }

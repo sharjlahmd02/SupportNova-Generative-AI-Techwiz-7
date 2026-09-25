@@ -9,9 +9,13 @@ const origin = configured.replace(/\/+$/, '').replace(/\/api$/, '')
  * In development the Vite proxy forwards `/api` to the backend when no base URL is set,
  * so leaving `VITE_API_BASE_URL` empty also avoids CORS entirely.
  */
+/**
+ * No instance-level Content-Type: axios only sets `application/json` itself when
+ * the body is a plain object, and leaving the header unset is what lets the
+ * browser stamp `multipart/form-data` **with its boundary** for uploads.
+ */
 export const api = axios.create({
   baseURL: origin ? `${origin}/api` : '/api',
-  headers: { 'Content-Type': 'application/json' },
   timeout: 60_000,
 })
 

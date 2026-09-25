@@ -45,7 +45,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={this.handleReload}
-            className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-brand-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-1"
+            className="mt-5 inline-flex h-11 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-ink/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
           >
             <RotateCcw className="size-4" aria-hidden="true" />
             Reload application

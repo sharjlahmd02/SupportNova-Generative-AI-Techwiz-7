@@ -15,12 +15,17 @@ class UserRole(str, enum.Enum):
 
 
 class ComplaintStatus(str, enum.Enum):
+    """SRS §5.2 lifecycle — every value a customer can be shown."""
+
     new = "New"
     analyzed = "Analyzed"
     assigned = "Assigned"
+    in_progress = "In Progress"
+    awaiting_customer = "Awaiting Customer"
     escalated = "Escalated"
     resolved = "Resolved"
     closed = "Closed"
+    reopened = "Reopened"
 
 
 class VerificationStatus(str, enum.Enum):
@@ -50,18 +55,67 @@ class Complaint(Base):
     product_service = Column(String, nullable=True)
     order_ref = Column(String, nullable=True)
     channel = Column(String, nullable=True)
+    preferred_contact = Column(String, nullable=True)
     date = Column(DateTime, default=datetime.utcnow)
     attachments = Column(JSON, nullable=True)
     prior_complaint_ref = Column(String, nullable=True)
     requested_resolution = Column(String, nullable=True)
     status = Column(SQLEnum(ComplaintStatus), default=ComplaintStatus.new, nullable=False)
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    duplicate_of = Column(Integer, ForeignKey("complaints.id"), nullable=True)
+    resolution_accepted_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     intelligence = relationship("ComplaintIntelligence", back_populates="complaint", uselist=False)
     validation = relationship("ValidationResult", back_populates="complaint", uselist=False)
     review_case = relationship("ReviewCase", back_populates="complaint", uselist=False)
+    messages = relationship(
+        "ComplaintMessage",
+        back_populates="complaint",
+        cascade="all, delete-orphan",
+        order_by="ComplaintMessage.created_at",
+    )
+    events = relationship(
+        "ComplaintEvent",
+        back_populates="complaint",
+        cascade="all, delete-orphan",
+        order_by="ComplaintEvent.created_at",
+    )
+
+
+class ComplaintMessage(Base):
+    """SRS §4.3 / §5.3 — the customer-visible response & clarification thread."""
+
+    __tablename__ = "complaint_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    complaint_id = Column(Integer, ForeignKey("complaints.id"), nullable=False, index=True)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    author_name = Column(String, nullable=False)
+    author_role = Column(String, nullable=False)
+    # clarification | reply | response | system
+    kind = Column(String, nullable=False, default="reply")
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    complaint = relationship("Complaint", back_populates="messages")
+
+
+class ComplaintEvent(Base):
+    """SRS §4.2 / §5.2 — lifecycle history the customer can replay."""
+
+    __tablename__ = "complaint_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    complaint_id = Column(Integer, ForeignKey("complaints.id"), nullable=False, index=True)
+    event_type = Column(String, nullable=False)
+    label = Column(String, nullable=False)
+    detail = Column(JSON, nullable=True)
+    actor = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    complaint = relationship("Complaint", back_populates="events")
 
 
 class ComplaintIntelligence(Base):
@@ -180,6 +234,10 @@ class RuleMatrixEntry(Base):
     required_actions = Column(JSON, nullable=True)
     prohibited_actions = Column(JSON, nullable=True)
     follow_up_rule = Column(String, nullable=True)
+    # doc/company/resolution_rule_matrix.json carries a human-readable department
+    # name and an explicit follow-up window alongside the DEPT code.
+    department_name = Column(String, nullable=True)
+    follow_up_days = Column(Integer, nullable=True)
 
 
 class ReviewCase(Base):

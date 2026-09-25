@@ -42,7 +42,7 @@ export function SkeletonTable({ rows = 5, cols = 5 }: { rows?: number; cols?: nu
 /** Full-card loading block used where a Card would sit. */
 export function SkeletonCard({ lines = 4 }: { lines?: number }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 sm:p-5" aria-hidden="true">
+    <div className="rounded-xl border border-border bg-surface p-4 sm:p-5" aria-hidden="true">
       <Skeleton className="h-4 w-40" />
       <Skeleton className="mt-4 h-7 w-20" />
       <SkeletonText lines={lines} className="mt-4" />

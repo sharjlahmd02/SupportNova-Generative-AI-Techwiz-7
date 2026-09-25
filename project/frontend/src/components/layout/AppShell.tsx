@@ -49,21 +49,21 @@ function initials(name: string): string {
 
 function SidebarContent({ sections, onNavigate }: { sections: NavSection[]; onNavigate?: () => void }) {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
-        <span className="grid size-7 place-items-center rounded-md bg-brand-600 text-white shadow-sm">
-          <ShieldCheck className="size-4" aria-hidden="true" />
+    <div className="flex h-full flex-col bg-ink text-white">
+      <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-white/10 px-4">
+        <span className="grid size-8 place-items-center rounded-lg bg-white text-ink">
+          <ShieldCheck className="size-4.5" aria-hidden="true" />
         </span>
-        <span className="text-[15px] font-bold tracking-tight text-ink">SupportNova</span>
+        <span className="text-[15px] font-semibold tracking-tight text-white">SupportNova</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Main">
         {sections.map((section) => (
-          <div key={section.title} className="mb-5 last:mb-0">
-            <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-faint">
+          <div key={section.title} className="mb-6 last:mb-0">
+            <p className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-[0.09em] text-white/35">
               {section.title}
             </p>
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {section.items.map((item) => (
                 <li key={item.to}>
                   <NavLink
@@ -72,18 +72,21 @@ function SidebarContent({ sections, onNavigate }: { sections: NavSection[]; onNa
                     onClick={onNavigate}
                     className={({ isActive }) =>
                       cn(
-                        'group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
+                        'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors duration-150',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink',
                         isActive
-                          ? 'bg-brand-50 text-brand-700'
-                          : 'text-ink-soft hover:bg-canvas hover:text-ink',
+                          ? 'bg-white text-ink shadow-sm'
+                          : 'text-white/65 hover:bg-white/[0.08] hover:text-white',
                       )
                     }
                   >
                     {({ isActive }) => (
                       <>
                         <item.icon
-                          className={cn('size-4 shrink-0', isActive ? 'text-brand-600' : 'text-faint group-hover:text-muted')}
+                          className={cn(
+                            'size-4 shrink-0',
+                            isActive ? 'text-ink' : 'text-white/45 group-hover:text-white',
+                          )}
                           aria-hidden="true"
                         />
                         <span className="truncate">{item.label}</span>
@@ -97,8 +100,8 @@ function SidebarContent({ sections, onNavigate }: { sections: NavSection[]; onNa
         ))}
       </nav>
 
-      <div className="border-t border-border px-4 py-3">
-        <p className="text-[11px] text-faint">GenAI analysis · Python verified</p>
+      <div className="border-t border-white/10 px-4 py-3.5">
+        <p className="text-[11px] font-medium text-white/35">GenAI analysis · Python verified</p>
       </div>
     </div>
   )
@@ -175,7 +178,7 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border bg-surface lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-ink lg:block">
         <SidebarContent sections={sections} />
       </aside>
 
@@ -187,12 +190,12 @@ export function AppShell() {
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 left-0 w-64 max-w-[85vw] border-r border-border bg-surface shadow-pop">
+          <div className="absolute inset-y-0 left-0 w-64 max-w-[85vw] border-r border-white/10 bg-ink shadow-pop">
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}
               aria-label="Close navigation"
-              className="absolute right-2 top-3 rounded p-1.5 text-muted hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+              className="absolute right-2 top-3.5 z-10 rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             >
               <X className="size-4" aria-hidden="true" />
             </button>
@@ -204,12 +207,12 @@ export function AppShell() {
       <div className="lg:pl-64">
         {/* Topbar */}
         <header className="sticky top-0 z-20 border-b border-border bg-surface/90 backdrop-blur">
-          <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+          <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
               aria-label="Open navigation"
-              className="-ml-1 rounded-md p-2 text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 lg:hidden"
+              className="-ml-1 rounded-lg p-2 text-muted transition-colors hover:bg-brand-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 lg:hidden"
             >
               <Menu className="size-5" aria-hidden="true" />
             </button>
@@ -220,28 +223,28 @@ export function AppShell() {
                 <li aria-hidden="true" className="hidden text-faint sm:block">
                   <ChevronRight className="size-3.5" />
                 </li>
-                <li className="truncate font-medium text-ink">{crumb}</li>
+                <li className="truncate font-semibold tracking-tight text-ink">{crumb}</li>
               </ol>
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <span className="hidden items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted ring-1 ring-border sm:inline-flex">
+              <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink-soft ring-1 ring-inset ring-border sm:inline-flex">
                 <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
                 {role}
               </span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <span
-                  className="grid size-8 place-items-center rounded-full bg-brand-600 text-xs font-bold text-white"
+                  className="grid size-8 place-items-center rounded-full bg-ink text-[11px] font-semibold text-white"
                   aria-hidden="true"
                 >
                   {initials(user.username)}
                 </span>
                 <div className="hidden leading-tight sm:block">
-                  <p className="max-w-32 truncate text-[13px] font-semibold text-ink">
+                  <p className="max-w-32 truncate text-[13px] font-semibold tracking-tight text-ink">
                     {user.username}
                   </p>
-                  <p className="text-[11px] text-muted">{user.email}</p>
+                  <p className="truncate text-[11px] text-muted">{user.email}</p>
                 </div>
               </div>
 

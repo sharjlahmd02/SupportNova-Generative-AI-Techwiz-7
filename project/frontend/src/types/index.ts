@@ -30,6 +30,48 @@ export interface Complaint {
   escalation_required?: boolean | null
   verification_status?: string | null
   mismatch_reasons?: string[] | null
+  preferred_contact?: string | null
+  duplicate_of?: number | null
+  resolution_accepted_at?: string | null
+  clarification_questions?: string[] | null
+  resolution_steps?: string[] | null
+  customer_response?: string | null
+  follow_up_message?: string | null
+}
+
+export interface StoredAttachment {
+  filename: string
+  original_name: string
+  content_type?: string | null
+  size?: number | null
+}
+
+export interface ComplaintMessage {
+  id: number
+  complaint_id: number
+  author_name: string
+  author_role: string
+  kind: 'clarification' | 'reply' | 'response' | 'system'
+  body: string
+  created_at: string
+}
+
+export interface ComplaintEvent {
+  id: number
+  complaint_id: number
+  event_type: string
+  label: string
+  detail?: Record<string, unknown> | null
+  actor?: string | null
+  created_at: string
+}
+
+export interface DuplicateCandidate {
+  id: number
+  title: string
+  status: string
+  similarity: number
+  created_at: string
 }
 
 export interface PipelineResult {

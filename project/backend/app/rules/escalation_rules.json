@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "document_id": "ESC-RULES-001",
+    "title": "TravelNova Mandatory Escalation Rules",
+    "version": "2.0",
+    "effective_date": "2026-01-20",
+    "policy_reference": "ESC-SOP-08"
+  },
+  "escalation_levels": {
+    "0": "No Escalation",
+    "1": "Supervisor Review",
+    "2": "Department Manager",
+    "3": "Specialist Team",
+    "4": "Compliance Review",
+    "5": "Critical Management Escalation"
+  },
+  "rules": [
+    {
+      "rule_id": "ESC-001",
+      "trigger": "Safety concern involving physical harm or threat",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-002",
+      "trigger": "Data breach or privacy violation",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-003",
+      "trigger": "Legal threat or mention of lawsuit",
+      "min_level": 3,
+      "priority_override": "P1",
+      "response_time": "2 hours"
+    },
+    {
+      "rule_id": "ESC-004",
+      "trigger": "Customer stranded abroad",
+      "min_level": 2,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-005",
+      "trigger": "Booking value exceeding $10,000",
+      "min_level": 2,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-006",
+      "trigger": "Third unresolved complaint from same customer",
+      "min_level": 2,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-007",
+      "trigger": "Medical emergency during travel",
+      "min_level": 3,
+      "priority_override": "P0",
+      "response_time": "30 minutes"
+    },
+    {
+      "rule_id": "ESC-008",
+      "trigger": "Fraud or unauthorized transaction",
+      "min_level": 3,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-009",
+      "trigger": "Government or regulatory inquiry",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-010",
+      "trigger": "Social media complaint with >10,000 follower reach",
+      "min_level": 5,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-011",
+      "trigger": "Child safety concern",
+      "min_level": 5,
+      "priority_override": "P0",
+      "response_time": "immediate"
+    },
+    {
+      "rule_id": "ESC-012",
+      "trigger": "Discrimination allegation",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-013",
+      "trigger": "SLA breach exceeding 48 hours",
+      "min_level": "current+1",
+      "priority_override": null,
+      "response_time": "auto"
+    },
+    {
+      "rule_id": "ESC-014",
+      "trigger": "Complaint involving partner airline/hotel executive",
+      "min_level": 3,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-015",
+      "trigger": "5+ complaints about same service provider within 7 days",
+      "min_level": 3,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-016",
+      "trigger": "Customer threatens self-harm",
+      "min_level": 5,
+      "priority_override": "P0",
+      "response_time": "immediate"
+    },
+    {
+      "rule_id": "ESC-017",
+      "trigger": "Pest infestation at hotel",
+      "min_level": 1,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-018",
+      "trigger": "Group booking dispute (10+ travelers)",
+      "min_level": 2,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-019",
+      "trigger": "Diamond/Platinum loyalty customer complaint",
+      "min_level": 1,
+      "priority_override": "P1",
+      "response_time": "2 hours"
+    },
+    {
+      "rule_id": "ESC-020",
+      "trigger": "Denied boarding due to overbooking",
+      "min_level": 2,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-021",
+      "trigger": "Force majeure refund request",
+      "min_level": 2,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-022",
+      "trigger": "Accessibility needs not met",
+      "min_level": 1,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-023",
+      "trigger": "Refund request for booking older than 12 months",
+      "min_level": 4,
+      "priority_override": null,
+      "response_time": "24 hours"
+    },
+    {
+      "rule_id": "ESC-024",
+      "trigger": "Agent misinformation causing financial loss",
+      "min_level": 1,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-025",
+      "trigger": "Harassment at destination",
+      "min_level": 5,
+      "priority_override": "P0",
+      "response_time": "immediate"
+    },
+    {
+      "rule_id": "ESC-026",
+      "trigger": "Booking lost after system error",
+      "min_level": 1,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-027",
+      "trigger": "Terrorism or political instability at destination",
+      "min_level": 5,
+      "priority_override": "P0",
+      "response_time": "immediate"
+    },
+    {
+      "rule_id": "ESC-028",
+      "trigger": "Account hacked with unauthorized bookings",
+      "min_level": 3,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-029",
+      "trigger": "Flight delay exceeding 6 hours",
+      "min_level": 1,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-030",
+      "trigger": "Multiple customers affected by same issue (systemic failure)",
+      "min_level": 3,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-031",
+      "trigger": "Incorrect visa information from TravelNova causing denied boarding",
+      "min_level": 2,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-032",
+      "trigger": "Currency display error causing unexpected charges",
+      "min_level": 1,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-033",
+      "trigger": "Unresolved complaint reopened",
+      "min_level": 1,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-034",
+      "trigger": "Customer data shared without consent",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-035",
+      "trigger": "Fraudulent loyalty points activity detected",
+      "min_level": 3,
+      "priority_override": "P0",
+      "response_time": "2 hours"
+    },
+    {
+      "rule_id": "ESC-036",
+      "trigger": "Hotel unsafe conditions reported",
+      "min_level": 4,
+      "priority_override": "P0",
+      "response_time": "1 hour"
+    },
+    {
+      "rule_id": "ESC-037",
+      "trigger": "Package with 3+ substandard components",
+      "min_level": 1,
+      "priority_override": "P1",
+      "response_time": "4 hours"
+    },
+    {
+      "rule_id": "ESC-038",
+      "trigger": "Compensation request exceeding $500",
+      "min_level": 2,
+      "priority_override": null,
+      "response_time": "8 hours"
+    }
+  ]
+}

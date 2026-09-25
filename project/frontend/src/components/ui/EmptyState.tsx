@@ -29,11 +29,14 @@ export function EmptyState({
         className,
       )}
     >
-      <span className="grid size-10 place-items-center rounded-full bg-canvas text-faint" aria-hidden="true">
+      <span
+        className="grid size-11 place-items-center rounded-xl bg-brand-50 text-muted ring-1 ring-inset ring-border"
+        aria-hidden="true"
+      >
         {icon ?? <Inbox className="size-5" />}
       </span>
-      <p className="mt-3 text-sm font-semibold text-ink">{title}</p>
-      {description && <p className="mt-1 max-w-md text-xs text-muted">{description}</p>}
+      <p className="mt-3.5 text-sm font-semibold tracking-tight text-ink">{title}</p>
+      {description && <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted">{description}</p>}
       {action && <div className="mt-4 flex flex-wrap justify-center gap-2">{action}</div>}
     </div>
   )

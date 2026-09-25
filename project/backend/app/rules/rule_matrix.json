@@ -1,212 +1,2581 @@
 [
   {
     "rule_id": "RULE-001",
-    "category": "Billing",
-    "subcategory": "Incorrect Charge",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Billing"},
-    "department": "Billing Support",
+    "category": "Booking Issues",
+    "subcategory": "Booking Error",
+    "conditions": [
+      "Incorrect booking details",
+      "Wrong dates/destination"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
     "urgency": "Medium",
     "priority": "P2",
-    "policy_id": "POL-BILL-001",
-    "escalation_trigger": {"amount_threshold": 1000, "condition": "amount > threshold"},
-    "required_actions": ["verify_charge", "issue_refund_if_error"],
-    "prohibited_actions": ["deny_without_investigation"],
-    "follow_up_rule": "FOLLOW-BILL-001"
+    "policy_id": "CMP-POL-07",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify booking details",
+      "Correct error at no cost if TravelNova fault",
+      "Apply change fee if customer error"
+    ],
+    "prohibited_actions": [
+      "Do not promise free correction without verifying fault"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-001",
+    "follow_up_days": 3
   },
   {
     "rule_id": "RULE-002",
-    "category": "Billing",
-    "subcategory": "Refund Request",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Billing"},
-    "department": "Billing Support",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-BILL-002",
-    "escalation_trigger": {"amount_threshold": 5000, "condition": "amount > threshold"},
-    "required_actions": ["verify_eligibility", "process_refund"],
-    "prohibited_actions": ["refund_without_policy_match"],
-    "follow_up_rule": "FOLLOW-BILL-002"
+    "category": "Booking Issues",
+    "subcategory": "Booking Not Confirmed",
+    "conditions": [
+      "Payment processed but no confirmation received"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "DEL-POL-04",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check payment status",
+      "Verify booking in system",
+      "Resend confirmation or process booking",
+      "If duplicate payment found, initiate refund"
+    ],
+    "prohibited_actions": [
+      "Do not ask customer to rebook and pay again before checking"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-002",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-003",
-    "category": "Technical",
-    "subcategory": "Service Outage",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Technical"},
-    "department": "Technical Support",
-    "urgency": "High",
-    "priority": "P1",
-    "policy_id": "POL-TECH-001",
-    "escalation_trigger": true,
-    "required_actions": ["acknowledge_outage", "provide_eta", "escalate_to_engineering"],
-    "prohibited_actions": ["blame_customer_equipment"],
-    "follow_up_rule": "FOLLOW-TECH-001"
+    "category": "Booking Issues",
+    "subcategory": "Booking Modification",
+    "conditions": [
+      "Customer wants to change dates, passengers, or details"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check modification eligibility",
+      "Calculate change fees",
+      "Process change if within policy"
+    ],
+    "prohibited_actions": [
+      "Do not waive fees without supervisor approval"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
   },
   {
     "rule_id": "RULE-004",
-    "category": "Technical",
-    "subcategory": "Performance Issue",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Technical"},
-    "department": "Technical Support",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-TECH-002",
-    "escalation_trigger": {"duration_hours": 24, "condition": "issue_duration > threshold"},
-    "required_actions": ["collect_diagnostics", "provide_workaround"],
-    "prohibited_actions": [],
-    "follow_up_rule": "FOLLOW-TECH-002"
+    "category": "Booking Issues",
+    "subcategory": "Overbooking",
+    "conditions": [
+      "Customer denied service due to overbooking by supplier"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "REP-POL-12",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Arrange immediate alternative",
+      "Offer compensation per policy",
+      "Document supplier fault"
+    ],
+    "prohibited_actions": [
+      "Do not blame customer",
+      "Do not offer upgrade as standard right"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-004",
+    "follow_up_days": 2
   },
   {
     "rule_id": "RULE-005",
-    "category": "Account",
-    "subcategory": "Access Issue",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Account"},
-    "department": "Account Management",
+    "category": "Booking Issues",
+    "subcategory": "Double Booking",
+    "conditions": [
+      "System created duplicate reservation"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
     "urgency": "High",
     "priority": "P1",
-    "policy_id": "POL-ACC-001",
-    "escalation_trigger": {"is_vip": true, "condition": "customer_type == 'vip'"},
-    "required_actions": ["verify_identity", "reset_credentials"],
-    "prohibited_actions": ["share_password_in_cleartext"],
-    "follow_up_rule": "FOLLOW-ACC-001"
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Cancel duplicate",
+      "Refund duplicate charge immediately",
+      "Verify correct booking is intact"
+    ],
+    "prohibited_actions": [
+      "Do not ask customer to wait for standard refund timeline for obvious system errors"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-005",
+    "follow_up_days": 3
   },
   {
     "rule_id": "RULE-006",
-    "category": "Account",
-    "subcategory": "Data Privacy",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Account"},
-    "department": "Compliance",
-    "urgency": "Critical",
-    "priority": "P0",
-    "policy_id": "POL-ACC-002",
-    "escalation_trigger": true,
-    "required_actions": ["log_privacy_request", "escalate_to_dpo", "respond_within_30_days"],
-    "prohibited_actions": ["deny_without_legal_review"],
-    "follow_up_rule": "FOLLOW-ACC-002"
+    "category": "Flight Problems",
+    "subcategory": "Flight Delay (1-3 hours)",
+    "conditions": [
+      "Flight delayed between 1 and 3 hours"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Offer refreshment voucher ($15)",
+      "Provide updated departure information"
+    ],
+    "prohibited_actions": [
+      "Do not promise hotel accommodation for short delays"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
   },
   {
     "rule_id": "RULE-007",
-    "category": "Product",
-    "subcategory": "Defective Product",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Product"},
-    "department": "Product Support",
+    "category": "Flight Problems",
+    "subcategory": "Flight Delay (3-6 hours)",
+    "conditions": [
+      "Flight delayed between 3 and 6 hours"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
     "urgency": "High",
     "priority": "P1",
-    "policy_id": "POL-PROD-001",
-    "escalation_trigger": {"safety_risk": true, "condition": "entities.safety_concern == true"},
-    "required_actions": ["arrange_replacement", "initiate_recall_check"],
-    "prohibited_actions": ["repair_safety_critical_items"],
-    "follow_up_rule": "FOLLOW-PROD-001"
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Offer meal voucher ($30)",
+      "Offer rebooking option",
+      "Provide delay updates hourly"
+    ],
+    "prohibited_actions": [
+      "Do not guarantee specific departure time"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-007",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-008",
-    "category": "Product",
-    "subcategory": "Feature Request",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Product"},
-    "department": "Product Management",
-    "urgency": "Low",
-    "priority": "P3",
-    "policy_id": "POL-PROD-002",
-    "escalation_trigger": false,
-    "required_actions": ["log_feedback", "acknowledge_receipt"],
-    "prohibited_actions": ["promise_implementation_timeline"],
-    "follow_up_rule": "FOLLOW-PROD-002"
+    "category": "Flight Problems",
+    "subcategory": "Flight Delay (6+ hours)",
+    "conditions": [
+      "Flight delayed more than 6 hours"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Offer hotel accommodation",
+      "Offer meal voucher",
+      "Offer rebooking OR full refund",
+      "Provide transportation to hotel"
+    ],
+    "prohibited_actions": [
+      "Do not deny accommodation for delays over 6 hours"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-008",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-009",
-    "category": "Shipping",
-    "subcategory": "Lost Package",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Shipping"},
-    "department": "Logistics",
-    "urgency": "High",
-    "priority": "P1",
-    "policy_id": "POL-SHIP-001",
-    "escalation_trigger": {"value_threshold": 500, "condition": "entities.amount > threshold"},
-    "required_actions": ["initiate_trace", "offer_replacement_or_refund"],
-    "prohibited_actions": ["blame_carrier_without_investigation"],
-    "follow_up_rule": "FOLLOW-SHIP-001"
+    "category": "Flight Problems",
+    "subcategory": "Flight Cancellation",
+    "conditions": [
+      "Flight cancelled by airline"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Offer full refund within 7 days OR rebooking on next available",
+      "If overnight: provide hotel + meals",
+      "Document airline reference"
+    ],
+    "prohibited_actions": [
+      "Do not force rebooking if customer wants refund"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-009",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-010",
-    "category": "Shipping",
-    "subcategory": "Delayed Delivery",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Shipping"},
-    "department": "Logistics",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-SHIP-002",
-    "escalation_trigger": {"delay_days": 7, "condition": "delay > threshold"},
-    "required_actions": ["provide_tracking", "contact_carrier"],
-    "prohibited_actions": [],
-    "follow_up_rule": "FOLLOW-SHIP-002"
+    "category": "Flight Problems",
+    "subcategory": "Missed Connection",
+    "conditions": [
+      "Customer missed connecting flight due to delay on first leg"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Rebook on next connection at no cost",
+      "Offer meal voucher",
+      "If overnight: hotel accommodation"
+    ],
+    "prohibited_actions": [
+      "Do not charge rebooking fees for airline-caused missed connections"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-010",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-011",
-    "category": "Service",
-    "subcategory": "Poor Service Quality",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Service"},
-    "department": "Customer Experience",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-SERV-001",
-    "escalation_trigger": {"repeat_count": 3, "condition": "prior_complaints >= threshold"},
-    "required_actions": ["assign_senior_agent", "offer_service_recovery"],
-    "prohibited_actions": [],
-    "follow_up_rule": "FOLLOW-SERV-001"
+    "category": "Flight Problems",
+    "subcategory": "Denied Boarding",
+    "conditions": [
+      "Customer denied boarding due to overbooking"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Rebook on next flight",
+      "Compensation $200 minimum",
+      "Meal voucher",
+      "If overnight: hotel + $400 compensation"
+    ],
+    "prohibited_actions": [
+      "Do not minimize customer's experience"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-011",
+    "follow_up_days": 2
   },
   {
     "rule_id": "RULE-012",
-    "category": "Service",
-    "subcategory": "Staff Conduct",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Service"},
-    "department": "HR & Training",
-    "urgency": "High",
-    "priority": "P1",
-    "policy_id": "POL-SERV-002",
-    "escalation_trigger": true,
-    "required_actions": ["document_incident", "escalate_to_management"],
-    "prohibited_actions": ["dismiss_without_investigation"],
-    "follow_up_rule": "FOLLOW-SERV-002"
+    "category": "Flight Problems",
+    "subcategory": "Seat Assignment Issue",
+    "conditions": [
+      "Seat not matching booking or family separated"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Contact airline for seat reassignment",
+      "If pre-paid seat changed: refund seat selection fee"
+    ],
+    "prohibited_actions": [
+      "Do not promise specific seats"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
   },
   {
     "rule_id": "RULE-013",
-    "category": "Subscription",
-    "subcategory": "Cancellation Issue",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Subscription"},
-    "department": "Retention",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-SUB-001",
-    "escalation_trigger": {"customer_ltv": 10000, "condition": "entities.customer_ltv > threshold"},
-    "required_actions": ["confirm_cancellation", "offer_retention_incentive"],
-    "prohibited_actions": ["make_cancellation_difficult"],
-    "follow_up_rule": "FOLLOW-SUB-001"
+    "category": "Hotel Complaints",
+    "subcategory": "Room Quality Below Standard",
+    "conditions": [
+      "Room does not match advertised category or photos"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify claim with hotel",
+      "Offer relocation or partial refund (up to 30% per night)",
+      "Document with photos if available"
+    ],
+    "prohibited_actions": [
+      "Do not offer full refund without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-013",
+    "follow_up_days": 2
   },
   {
     "rule_id": "RULE-014",
-    "category": "Subscription",
-    "subcategory": "Auto-Renewal Dispute",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "Subscription"},
-    "department": "Billing Support",
-    "urgency": "Medium",
-    "priority": "P2",
-    "policy_id": "POL-SUB-002",
-    "escalation_trigger": false,
-    "required_actions": ["verify_consent", "refund_if_no_consent"],
-    "prohibited_actions": ["retain_without_explicit_consent"],
-    "follow_up_rule": "FOLLOW-SUB-002"
+    "category": "Hotel Complaints",
+    "subcategory": "Hotel Overbooking",
+    "conditions": [
+      "Confirmed reservation not honored by hotel"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Relocate to equal or higher category",
+      "One free night OR $100 credit",
+      "Cover transportation to new hotel"
+    ],
+    "prohibited_actions": [
+      "Do not downgrade customer without consent and compensation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-014",
+    "follow_up_days": 1
   },
   {
     "rule_id": "RULE-015",
-    "category": "General",
-    "subcategory": "Other",
-    "conditions": {"field": "issue_category", "operator": "equals", "value": "General"},
-    "department": "General Support",
+    "category": "Hotel Complaints",
+    "subcategory": "Cleanliness Issue",
+    "conditions": [
+      "Unsanitary room conditions reported"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Contact hotel for immediate room change",
+      "If not resolved: relocate to alternative hotel",
+      "Offer compensation for inconvenience"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss cleanliness complaints"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-015",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-016",
+    "category": "Hotel Complaints",
+    "subcategory": "Unsafe Conditions",
+    "conditions": [
+      "Safety hazard reported at hotel (fire safety, structural, security)"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate relocation",
+      "Report to Safety & Compliance",
+      "Document incident",
+      "Full refund for affected nights"
+    ],
+    "prohibited_actions": [
+      "Do not delay action on safety concerns",
+      "Do not suggest customer wait"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-016",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-017",
+    "category": "Hotel Complaints",
+    "subcategory": "Check-in/Check-out Issue",
+    "conditions": [
+      "Early check-in denied, late check-out denied, long wait times"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
     "urgency": "Low",
     "priority": "P3",
-    "policy_id": "POL-GEN-001",
+    "policy_id": "HTL-POL-15",
     "escalation_trigger": false,
-    "required_actions": ["categorize_properly", "route_to_specialist"],
+    "required_actions": [
+      "Contact hotel to resolve",
+      "Refund early check-in fee if paid and denied",
+      "If wait exceeds 2 hours: offer meal voucher"
+    ],
+    "prohibited_actions": [
+      "Do not promise late check-out"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-018",
+    "category": "Hotel Complaints",
+    "subcategory": "Missing Amenities",
+    "conditions": [
+      "Advertised amenities not available (pool, WiFi, gym, breakfast)"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify advertised amenities",
+      "If confirmed missing: partial refund or credit",
+      "Update hotel listing if systemic"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss as minor if customer booked specifically for amenity"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-018",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-019",
+    "category": "Billing & Payments",
+    "subcategory": "Duplicate Charge",
+    "conditions": [
+      "Customer charged twice for same booking"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify duplicate in payment system",
+      "Refund duplicate within 3 business days",
+      "Provide transaction reference"
+    ],
+    "prohibited_actions": [
+      "Do not deny without checking payment records"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-019",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-020",
+    "category": "Billing & Payments",
+    "subcategory": "Incorrect Charge",
+    "conditions": [
+      "Amount charged differs from quoted price"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Compare charged amount with booking record",
+      "If overcharge confirmed: refund difference within 3 days",
+      "Explain any legitimate additional charges (taxes, fees)"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss price discrepancy without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-020",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-021",
+    "category": "Billing & Payments",
+    "subcategory": "Currency Conversion Dispute",
+    "conditions": [
+      "Customer disputes currency conversion rate or fee"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain 2.5% conversion fee policy",
+      "Provide conversion rate used",
+      "If fee not disclosed at booking: consider waiver"
+    ],
+    "prohibited_actions": [
+      "Do not promise refund of conversion fees without policy check"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-022",
+    "category": "Billing & Payments",
+    "subcategory": "Unauthorized Transaction",
+    "conditions": [
+      "Customer did not authorize the charge"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "SEC-POL-22",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Freeze account immediately",
+      "Investigate transaction",
+      "Report to fraud team",
+      "If confirmed unauthorized: full refund"
+    ],
+    "prohibited_actions": [
+      "Do not delay freezing account",
+      "Do not share transaction details without identity verification"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-022",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-023",
+    "category": "Billing & Payments",
+    "subcategory": "Installment Payment Issue",
+    "conditions": [
+      "Missed installment, incorrect installment amount, payment plan dispute"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Review payment plan status",
+      "Apply late fee per policy ($15)",
+      "If system error: waive late fee and correct"
+    ],
+    "prohibited_actions": [
+      "Do not cancel booking for first missed payment without notice"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-023",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-024",
+    "category": "Billing & Payments",
+    "subcategory": "Invoice Request",
+    "conditions": [
+      "Customer needs invoice or receipt"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Generate and send invoice within 24 hours"
+    ],
     "prohibited_actions": [],
-    "follow_up_rule": "FOLLOW-GEN-001"
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-025",
+    "category": "Refund Disputes",
+    "subcategory": "Refund Not Received",
+    "conditions": [
+      "Customer hasn't received approved refund within stated timeline"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check refund processing status",
+      "If processed: provide transaction reference for bank",
+      "If not processed: escalate internally and expedite"
+    ],
+    "prohibited_actions": [
+      "Do not tell customer to just wait without checking"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-025",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-026",
+    "category": "Refund Disputes",
+    "subcategory": "Refund Amount Dispute",
+    "conditions": [
+      "Customer disagrees with refund amount"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain refund calculation per policy",
+      "If error found: process difference",
+      "If policy correctly applied: explain applicable deductions"
+    ],
+    "prohibited_actions": [
+      "Do not offer additional refund without policy basis"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-026",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-027",
+    "category": "Refund Disputes",
+    "subcategory": "Refund Denied",
+    "conditions": [
+      "Refund request denied per policy, customer contests"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Re-review eligibility criteria",
+      "Explain denial reason with policy reference",
+      "Offer travel credit as alternative if applicable"
+    ],
+    "prohibited_actions": [
+      "Do not override refund denial without manager approval",
+      "Do not promise refund to appease angry customer"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-027",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-028",
+    "category": "Refund Disputes",
+    "subcategory": "Force Majeure Refund",
+    "conditions": [
+      "Refund request due to natural disaster, travel ban, pandemic"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Verify force majeure event",
+      "Process full refund with documentation",
+      "Offer rebooking as alternative"
+    ],
+    "prohibited_actions": [
+      "Do not deny force majeure refund without manager consultation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-028",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-029",
+    "category": "Cancellation Issues",
+    "subcategory": "Free Cancellation Window Dispute",
+    "conditions": [
+      "Customer claims cancellation was within free window but was charged"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify cancellation timestamp vs booking timestamp",
+      "If within 24hr window and >7 days before departure: process full refund",
+      "If system error: escalate to Tech"
+    ],
+    "prohibited_actions": [
+      "Do not deny without timestamp verification"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-029",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-030",
+    "category": "Cancellation Issues",
+    "subcategory": "Cancellation Fee Dispute",
+    "conditions": [
+      "Customer disputes the cancellation fee charged"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify fee against policy schedule",
+      "Explain applicable fee structure",
+      "If overcharged: refund difference"
+    ],
+    "prohibited_actions": [
+      "Do not waive fees without documented justification"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-031",
+    "category": "Cancellation Issues",
+    "subcategory": "Supplier Cancellation",
+    "conditions": [
+      "Airline/hotel/operator cancelled the service"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Offer full refund or equivalent rebooking at no cost",
+      "If hotel: relocate to alternative",
+      "If flight: rebook on next available"
+    ],
+    "prohibited_actions": [
+      "Do not charge customer for supplier-caused cancellation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-031",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-032",
+    "category": "Cancellation Issues",
+    "subcategory": "Group Cancellation",
+    "conditions": [
+      "Group booking (10+) cancellation request"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Check group cancellation policy (45-day minimum)",
+      "Calculate 20% penalty if within 45 days",
+      "Get manager approval for exceptions"
+    ],
+    "prohibited_actions": [
+      "Do not process group cancellation without manager review"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-032",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-033",
+    "category": "Customer Service Quality",
+    "subcategory": "Rude Agent Behavior",
+    "conditions": [
+      "Customer reports unprofessional or rude agent"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "High",
+    "priority": "P2",
+    "policy_id": "AGT-POL-23",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Apologize to customer",
+      "Review interaction records",
+      "Offer goodwill gesture ($25-50 credit)",
+      "Internal HR review of agent"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss customer's experience",
+      "Do not share agent disciplinary details with customer"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-033",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-034",
+    "category": "Customer Service Quality",
+    "subcategory": "Discrimination Allegation",
+    "conditions": [
+      "Customer alleges discrimination based on race, gender, religion, etc."
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "AGT-POL-23",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Escalate immediately to Compliance",
+      "Document allegation in detail",
+      "Formal investigation within 24 hours"
+    ],
+    "prohibited_actions": [
+      "Do not minimize allegation",
+      "Do not make determinations without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-034",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-035",
+    "category": "Customer Service Quality",
+    "subcategory": "Long Wait Time",
+    "conditions": [
+      "Customer waited excessively for support response"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "SLA-RUL-11",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Apologize for wait",
+      "Address original query promptly",
+      "If SLA breached: escalate internally"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-036",
+    "category": "Customer Service Quality",
+    "subcategory": "Misinformation by Agent",
+    "conditions": [
+      "Agent provided incorrect information leading to customer loss"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "AGT-POL-23",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Verify what information was provided",
+      "If confirmed wrong: compensate customer for resulting loss",
+      "Retrain agent"
+    ],
+    "prohibited_actions": [
+      "Do not deny responsibility if records show misinformation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-036",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-037",
+    "category": "Technical Issues",
+    "subcategory": "Website Error",
+    "conditions": [
+      "Website crash, error page, slow loading"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Log issue with IT",
+      "Assist customer with alternative booking method",
+      "Provide status update"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-037",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-038",
+    "category": "Technical Issues",
+    "subcategory": "Payment Gateway Error",
+    "conditions": [
+      "Payment failed, charged without booking, timeout during payment"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check if payment was captured",
+      "If charged without booking: process refund or create booking",
+      "Provide transaction reference"
+    ],
+    "prohibited_actions": [
+      "Do not ask customer to pay again without checking existing charge"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-038",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-039",
+    "category": "Technical Issues",
+    "subcategory": "App Crash",
+    "conditions": [
+      "Mobile app crash during booking or use"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Suggest clear cache/reinstall",
+      "If booking lost: help recreate",
+      "Log bug report"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-040",
+    "category": "Technical Issues",
+    "subcategory": "Account Locked",
+    "conditions": [
+      "Customer cannot access their account"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify identity",
+      "Unlock account or guide password reset",
+      "Check for suspicious activity"
+    ],
+    "prohibited_actions": [
+      "Do not unlock without identity verification"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-041",
+    "category": "Technical Issues",
+    "subcategory": "Account Hacked",
+    "conditions": [
+      "Unauthorized access to customer account"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "SEC-POL-22",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Lock account immediately",
+      "Investigate unauthorized access",
+      "Reverse unauthorized bookings",
+      "Reset credentials"
+    ],
+    "prohibited_actions": [
+      "Do not delay account lockdown"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-041",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-042",
+    "category": "Luggage & Baggage",
+    "subcategory": "Lost Luggage",
+    "conditions": [
+      "Customer's luggage lost during travel"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Assist with airline PIR filing",
+      "Follow up with airline within 48 hours",
+      "If Premium Protection: issue $100 emergency credit"
+    ],
+    "prohibited_actions": [
+      "Do not promise airline will find luggage",
+      "Do not promise compensation amounts beyond policy"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-042",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-043",
+    "category": "Luggage & Baggage",
+    "subcategory": "Damaged Luggage",
+    "conditions": [
+      "Customer's luggage damaged during travel"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Guide customer to file PIR at airport",
+      "Follow up with airline",
+      "Provide documentation support for claim"
+    ],
+    "prohibited_actions": [
+      "Do not accept liability on behalf of airline"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-043",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-044",
+    "category": "Luggage & Baggage",
+    "subcategory": "Excess Baggage Dispute",
+    "conditions": [
+      "Unexpected excess baggage charges"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify baggage allowance for booking class",
+      "If TravelNova advertised incorrectly: reimburse",
+      "If airline policy: explain"
+    ],
+    "prohibited_actions": [
+      "Do not reimburse without verifying TravelNova fault"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-045",
+    "category": "Visa & Documentation",
+    "subcategory": "Incorrect Visa Information",
+    "conditions": [
+      "TravelNova provided wrong visa requirements"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "VIS-POL-16",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Verify information provided vs correct requirements",
+      "If TravelNova error: full refund + rebooking + $200 compensation",
+      "Update system information immediately"
+    ],
+    "prohibited_actions": [
+      "Do not blame customer for relying on TravelNova guidance"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-045",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-046",
+    "category": "Visa & Documentation",
+    "subcategory": "Missing Travel Documents",
+    "conditions": [
+      "E-ticket or voucher not received"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "DEL-POL-04",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Resend within 1 hour",
+      "If departure within 24 hours: escalate to urgent"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-046",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-047",
+    "category": "Visa & Documentation",
+    "subcategory": "Passport Name Mismatch",
+    "conditions": [
+      "Name on booking doesn't match passport"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "VIS-POL-16",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Correct name if minor typo (free within 48hrs, $50 after)",
+      "If major change: treat as cancellation + rebooking"
+    ],
+    "prohibited_actions": [
+      "Do not promise free name changes beyond policy"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-047",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-048",
+    "category": "Safety & Security",
+    "subcategory": "Safety Incident During Travel",
+    "conditions": [
+      "Customer injured, threatened, or experienced unsafe conditions"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Ensure customer safety first",
+      "Arrange medical assistance if needed",
+      "Document incident",
+      "Report to authorities if applicable",
+      "Immediate relocation"
+    ],
+    "prohibited_actions": [
+      "Do not delay response",
+      "Do not question validity of safety concern initially"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-048",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-049",
+    "category": "Safety & Security",
+    "subcategory": "Child Safety Concern",
+    "conditions": [
+      "Any concern involving safety of a minor"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate escalation to management",
+      "Contact local authorities if imminent danger",
+      "Document all details"
+    ],
+    "prohibited_actions": [
+      "Do not delay",
+      "Do not dismiss",
+      "Do not handle at agent level"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-049",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-050",
+    "category": "Safety & Security",
+    "subcategory": "Fraud Report",
+    "conditions": [
+      "Customer reports fraudulent booking or identity theft"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "SEC-POL-22",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Freeze affected bookings",
+      "Verify customer identity",
+      "Investigate fraud",
+      "Reverse unauthorized transactions"
+    ],
+    "prohibited_actions": [
+      "Do not release booking details without identity verification"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-050",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-051",
+    "category": "Privacy & Data",
+    "subcategory": "Data Breach",
+    "conditions": [
+      "Customer's personal data exposed or compromised"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "PRI-POL-06",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Notify customer within 72 hours",
+      "Investigate breach scope",
+      "Secure affected systems",
+      "Report to Chief Privacy Officer within 1 hour"
+    ],
+    "prohibited_actions": [
+      "Do not minimize breach",
+      "Do not delay notification"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-051",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-052",
+    "category": "Privacy & Data",
+    "subcategory": "Data Deletion Request",
+    "conditions": [
+      "Customer requests deletion of personal data"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "PRI-POL-06",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Process within 30 days",
+      "Inform about legally retained data",
+      "Confirm deletion completion"
+    ],
+    "prohibited_actions": [
+      "Do not delete legally required records"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-052",
+    "follow_up_days": 30
+  },
+  {
+    "rule_id": "RULE-053",
+    "category": "Privacy & Data",
+    "subcategory": "Unwanted Marketing",
+    "conditions": [
+      "Customer receiving marketing after opting out"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "PRI-POL-06",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify opt-out status",
+      "Update preferences immediately",
+      "Apologize and confirm removal within 48 hours"
+    ],
+    "prohibited_actions": [
+      "Do not send further marketing"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-053",
+    "follow_up_days": 7
+  },
+  {
+    "rule_id": "RULE-054",
+    "category": "Loyalty Program",
+    "subcategory": "Missing Points",
+    "conditions": [
+      "Points not credited after booking/travel"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify booking and point earning rules",
+      "Credit missing points within 5 business days"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-054",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-055",
+    "category": "Loyalty Program",
+    "subcategory": "Points Expiry Dispute",
+    "conditions": [
+      "Customer's points expired and they dispute"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check last activity date",
+      "If expired per policy (24 months inactive): explain",
+      "If system error: restore points",
+      "If within 30 days of expiry: consider goodwill restoration with manager approval"
+    ],
+    "prohibited_actions": [
+      "Do not restore expired points without checking policy"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-056",
+    "category": "Loyalty Program",
+    "subcategory": "Tier Status Dispute",
+    "conditions": [
+      "Customer disputes tier level or downgrade"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify points balance and tier thresholds",
+      "Explain tier criteria",
+      "If error: correct immediately"
+    ],
+    "prohibited_actions": [
+      "Do not upgrade tier manually without verification"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-057",
+    "category": "Loyalty Program",
+    "subcategory": "Redemption Issue",
+    "conditions": [
+      "Unable to redeem points or redemption error"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Check points balance and minimum redemption (1000 pts)",
+      "If system error: escalate to Tech",
+      "If insufficient points: explain"
+    ],
+    "prohibited_actions": [
+      "Do not allow redemption below minimum threshold"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-057",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-058",
+    "category": "Loyalty Program",
+    "subcategory": "Fraudulent Points Activity",
+    "conditions": [
+      "Suspicious points accumulation or redemption"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Suspend account pending investigation",
+      "Review all recent transactions",
+      "Forfeit fraudulently obtained points"
+    ],
+    "prohibited_actions": [
+      "Do not release points during investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-058",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-059",
+    "category": "Package & Tour Issues",
+    "subcategory": "Tour Guide No-Show",
+    "conditions": [
+      "Booked tour guide did not appear"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "PKG-POL-19",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Full activity refund",
+      "$50 travel credit",
+      "Arrange replacement if possible"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-059",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-060",
+    "category": "Package & Tour Issues",
+    "subcategory": "Package Quality Below Standard",
+    "conditions": [
+      "Multiple components of package fell below advertised standard"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "PKG-POL-19",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Document which components were substandard",
+      "If 3+ components: 20% package refund + travel credit",
+      "Review and update package listing"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss multi-component complaints"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-060",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-061",
+    "category": "Package & Tour Issues",
+    "subcategory": "Itinerary Change",
+    "conditions": [
+      "Package itinerary changed after booking"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "PKG-POL-19",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain reason for change",
+      "Offer rebooking if significant change",
+      "If major change: offer full refund option"
+    ],
+    "prohibited_actions": [
+      "Do not force altered itinerary without customer consent"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-061",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-062",
+    "category": "Transportation & Transfers",
+    "subcategory": "Transfer No-Show",
+    "conditions": [
+      "Booked airport/hotel transfer driver did not arrive"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Full refund of transfer fee",
+      "Reimburse alternative transport up to $100",
+      "Arrange replacement immediately if possible"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-062",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-063",
+    "category": "Transportation & Transfers",
+    "subcategory": "Car Rental Quality Issue",
+    "conditions": [
+      "Rental car not matching reservation or in poor condition"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Free upgrade to next category or $50 daily credit",
+      "If safety issue: immediate replacement"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-063",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-064",
+    "category": "Transportation & Transfers",
+    "subcategory": "Disputed Damage Charge",
+    "conditions": [
+      "Car rental company charges for damage customer denies"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Request damage documentation from rental company",
+      "Review customer's pre-rental photos if available",
+      "Investigate within 10 business days"
+    ],
+    "prohibited_actions": [
+      "Do not accept or deny claim without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-064",
+    "follow_up_days": 10
+  },
+  {
+    "rule_id": "RULE-065",
+    "category": "Booking Issues",
+    "subcategory": "VIP Customer Issue",
+    "conditions": [
+      "Diamond or Platinum loyalty tier customer with any complaint"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Priority handling",
+      "Personalized response",
+      "Consider enhanced compensation within guidelines"
+    ],
+    "prohibited_actions": [
+      "Do not route to general queue",
+      "Do not exceed compensation limits without approval"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-065",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-066",
+    "category": "Flight Problems",
+    "subcategory": "Stranded Passenger",
+    "conditions": [
+      "Customer stranded at airport or foreign location"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate rebooking",
+      "Hotel + meals + transport",
+      "Regular status updates every 2 hours"
+    ],
+    "prohibited_actions": [
+      "Do not leave customer without communication",
+      "Do not delay beyond 4 hours"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-066",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-067",
+    "category": "Refund Disputes",
+    "subcategory": "Refund for Non-Refundable Booking",
+    "conditions": [
+      "Customer requests refund on non-refundable fare/rate"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain non-refundable terms",
+      "Offer travel credit as alternative (if applicable)",
+      "Check if Premium Protection covers 'Cancel for Any Reason'"
+    ],
+    "prohibited_actions": [
+      "Do not promise refund on non-refundable booking",
+      "Do not override without manager approval"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-068",
+    "category": "Billing & Payments",
+    "subcategory": "Price Match Request",
+    "conditions": [
+      "Customer found lower price after booking"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain that once booked, price is locked",
+      "TravelNova does not offer price matching",
+      "Offer travel credit if significant difference and within 24hr window"
+    ],
+    "prohibited_actions": [
+      "Do not promise price adjustments after booking"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-069",
+    "category": "Cancellation Issues",
+    "subcategory": "Medical Emergency Cancellation",
+    "conditions": [
+      "Cancellation due to medical emergency"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Request medical documentation",
+      "Process under Exceptional Circumstances clause",
+      "Full refund with documentation",
+      "Offer rebooking alternative"
+    ],
+    "prohibited_actions": [
+      "Do not deny without reviewing documentation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-069",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-070",
+    "category": "Safety & Security",
+    "subcategory": "Legal Threat",
+    "conditions": [
+      "Customer threatens legal action or mentions lawyer"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Do not admit liability",
+      "Escalate to legal team",
+      "Document all communications",
+      "Continue professional service"
+    ],
+    "prohibited_actions": [
+      "Do not argue",
+      "Do not admit fault",
+      "Do not make promises to prevent legal action"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-070",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-071",
+    "category": "Hotel Complaints",
+    "subcategory": "Noise Complaint",
+    "conditions": [
+      "Excessive noise at hotel affecting customer's stay"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Contact hotel for room change",
+      "If ongoing construction: offer partial refund or relocation"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-072",
+    "category": "Billing & Payments",
+    "subcategory": "Hidden Fees",
+    "conditions": [
+      "Customer encounters fees not disclosed at booking"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify if fee was disclosed in booking terms",
+      "If not disclosed: refund the fee",
+      "If disclosed but unclear: improve disclosure and offer goodwill credit"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss hidden fee complaint without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-072",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-073",
+    "category": "Package & Tour Issues",
+    "subcategory": "Activity Cancellation",
+    "conditions": [
+      "Booked activity/excursion cancelled by operator"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "PKG-POL-19",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Full refund for cancelled activity",
+      "Offer alternative activity if available",
+      "If part of package: adjust package price"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-073",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-074",
+    "category": "Transportation & Transfers",
+    "subcategory": "Cruise Itinerary Change",
+    "conditions": [
+      "Port of call changed or skipped"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "CRU-POL-18",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain cruise line's right to change",
+      "Refund excursion fees for missed port",
+      "Advocate for onboard credit from cruise line"
+    ],
+    "prohibited_actions": [
+      "Do not promise compensation beyond excursion refund without cruise line agreement"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-074",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-075",
+    "category": "Refund Disputes",
+    "subcategory": "Partial Refund Dispute",
+    "conditions": [
+      "Customer received partial refund and disputes deductions"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Provide detailed breakdown of deductions",
+      "Reference applicable policy sections",
+      "If calculation error: process correction"
+    ],
+    "prohibited_actions": [
+      "Do not offer additional refund without policy justification"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-075",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-076",
+    "category": "Customer Service Quality",
+    "subcategory": "Unresolved Previous Complaint",
+    "conditions": [
+      "Customer follows up on previously unresolved complaint"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CMP-POL-07",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Review full complaint history",
+      "Apologize for delay",
+      "Expedite resolution",
+      "Assign senior agent"
+    ],
+    "prohibited_actions": [
+      "Do not restart process from scratch",
+      "Do not ask customer to re-explain"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-076",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-077",
+    "category": "Booking Issues",
+    "subcategory": "Booking for Wrong Person",
+    "conditions": [
+      "Booking made under incorrect passenger name"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "VIS-POL-16",
+    "escalation_trigger": false,
+    "required_actions": [
+      "If within 48hrs: correct free",
+      "If after 48hrs: $50 name correction fee",
+      "If completely different person: cancellation + rebooking"
+    ],
+    "prohibited_actions": [
+      "Do not promise free correction after 48hr window"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-077",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-078",
+    "category": "Flight Problems",
+    "subcategory": "In-Flight Service Complaint",
+    "conditions": [
+      "Issues with food, entertainment, seat comfort, crew behavior on flight"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Forward complaint to airline partner",
+      "Offer small goodwill gesture ($25 credit)",
+      "Document for partner quality review"
+    ],
+    "prohibited_actions": [
+      "Do not promise airline-side compensation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-078",
+    "follow_up_days": 7
+  },
+  {
+    "rule_id": "RULE-079",
+    "category": "Hotel Complaints",
+    "subcategory": "Billing by Hotel Direct",
+    "conditions": [
+      "Hotel charged customer directly for services that should be included"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify what was included in booking",
+      "Contact hotel to reverse incorrect charge",
+      "If hotel refuses: reimburse customer and dispute with hotel"
+    ],
+    "prohibited_actions": [
+      "Do not dismiss as hotel issue without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-079",
+    "follow_up_days": 5
+  },
+  {
+    "rule_id": "RULE-080",
+    "category": "Booking Issues",
+    "subcategory": "Accessibility Needs Not Met",
+    "conditions": [
+      "Booked accessible room/service not provided"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate alternative arrangement",
+      "Full refund if service unusable",
+      "Formal complaint to supplier",
+      "Compensation for inconvenience"
+    ],
+    "prohibited_actions": [
+      "Do not treat as low priority",
+      "Do not suggest customer should have confirmed directly with hotel"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-080",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-081",
+    "category": "Safety & Security",
+    "subcategory": "Customer Stranded Abroad",
+    "conditions": [
+      "Customer stuck in foreign country due to any reason"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Arrange immediate return transport",
+      "Provide hotel if overnight required",
+      "Regular contact every 4 hours",
+      "Embassy contact info if relevant"
+    ],
+    "prohibited_actions": [
+      "Do not leave without plan",
+      "Do not suggest customer arrange own travel home"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-081",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-082",
+    "category": "Privacy & Data",
+    "subcategory": "Data Shared Without Consent",
+    "conditions": [
+      "Customer's data shared with third party without authorization"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "PRI-POL-06",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Investigate data sharing incident",
+      "Notify Chief Privacy Officer",
+      "Remediate and notify customer"
+    ],
+    "prohibited_actions": [
+      "Do not minimize",
+      "Do not deny without investigation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-082",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-083",
+    "category": "Cancellation Issues",
+    "subcategory": "Cancellation by TravelNova",
+    "conditions": [
+      "TravelNova cancels booking due to supplier/safety/operational reasons"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Full refund or equivalent rebooking at no cost",
+      "Proactive customer notification",
+      "Offer alternatives before cancellation when possible"
+    ],
+    "prohibited_actions": [
+      "Do not cancel without notifying customer",
+      "Do not charge fees for TravelNova-initiated cancellation"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-083",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-084",
+    "category": "Billing & Payments",
+    "subcategory": "Failed Payment Hold",
+    "conditions": [
+      "Payment failed but funds held on customer's card"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Confirm no booking was created",
+      "Explain hold release timeline (5-7 business days)",
+      "Provide transaction reference for bank"
+    ],
+    "prohibited_actions": [
+      "Do not promise to expedite bank hold release (TravelNova cannot control this)"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-084",
+    "follow_up_days": 7
+  },
+  {
+    "rule_id": "RULE-085",
+    "category": "Flight Problems",
+    "subcategory": "Schedule Change by Airline",
+    "conditions": [
+      "Airline changed flight time after booking"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Notify customer of change",
+      "If change >2 hours: offer rebooking or refund",
+      "If minor change (<2 hours): inform only"
+    ],
+    "prohibited_actions": [
+      "Do not ignore schedule changes"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-085",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-086",
+    "category": "Hotel Complaints",
+    "subcategory": "Pest Infestation",
+    "conditions": [
+      "Bugs, bedbugs, rodents, or other pests at hotel"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate relocation",
+      "Full refund for affected nights",
+      "Report to health authorities if severe",
+      "Remove hotel from listings pending review"
+    ],
+    "prohibited_actions": [
+      "Do not offer room change in same hotel",
+      "Do not minimize health risk"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-086",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-087",
+    "category": "Package & Tour Issues",
+    "subcategory": "Tour Guide Unprofessional",
+    "conditions": [
+      "Tour guide behaved inappropriately or unprofessionally"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P2",
+    "policy_id": "PKG-POL-19",
+    "escalation_trigger": false,
+    "required_actions": [
+      "$100 credit",
+      "Internal review of tour operator",
+      "If serious misconduct: escalate to Safety"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-087",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-088",
+    "category": "Transportation & Transfers",
+    "subcategory": "Transfer Late Arrival",
+    "conditions": [
+      "Transfer driver arrived significantly late"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "TRN-POL-17",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Apologize for delay",
+      "If >45 min late: partial refund (50%)",
+      "If caused missed flight/event: escalate and compensate fully"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-089",
+    "category": "Refund Disputes",
+    "subcategory": "Refund Request Over 12 Months",
+    "conditions": [
+      "Refund requested for booking older than 12 months"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Cannot process without Compliance review",
+      "Escalate to Compliance",
+      "Document reason for late request"
+    ],
+    "prohibited_actions": [
+      "Do not process refund for bookings >12 months without Compliance approval"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-089",
+    "follow_up_days": 10
+  },
+  {
+    "rule_id": "RULE-090",
+    "category": "Customer Service Quality",
+    "subcategory": "Broken Promise",
+    "conditions": [
+      "Agent made a promise that was not fulfilled"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "AGT-POL-23",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Verify interaction records",
+      "Honor the promise if documented and reasonable",
+      "If promise was unauthorized: explain and offer alternative resolution"
+    ],
+    "prohibited_actions": [
+      "Do not deny promise without checking records"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-090",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-091",
+    "category": "Booking Issues",
+    "subcategory": "Travel Advisory Changed",
+    "conditions": [
+      "Government travel advisory changed after booking"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "VIS-POL-16",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Level 1-2: inform customer",
+      "Level 3: rebooking with reduced fee",
+      "Level 4: full refund or free rebooking"
+    ],
+    "prohibited_actions": [
+      "Do not force travel to Level 3+ destinations"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-091",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-092",
+    "category": "Safety & Security",
+    "subcategory": "Medical Emergency During Travel",
+    "conditions": [
+      "Customer has medical emergency while traveling"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Assist with local emergency services",
+      "Contact insurance provider",
+      "Arrange medical evacuation if Premium Protection",
+      "Keep family/emergency contact informed"
+    ],
+    "prohibited_actions": [
+      "Do not delay medical assistance",
+      "Do not question the emergency"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-092",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-093",
+    "category": "Loyalty Program",
+    "subcategory": "Partner Points Transfer Issue",
+    "conditions": [
+      "Points transfer to/from partner program failed"
+    ],
+    "department": "DEPT-07",
+    "department_name": "Loyalty & Rewards",
+    "urgency": "Low",
+    "priority": "P3",
+    "policy_id": "LOY-POL-13",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify transfer request",
+      "Contact partner program",
+      "Manual credit if system error"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-093",
+    "follow_up_days": 7
+  },
+  {
+    "rule_id": "RULE-094",
+    "category": "Hotel Complaints",
+    "subcategory": "Staff Behavior at Hotel",
+    "conditions": [
+      "Hotel staff rude or unhelpful to TravelNova customer"
+    ],
+    "department": "DEPT-03",
+    "department_name": "Hotel Services",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "HTL-POL-15",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Raise with hotel management",
+      "Offer room change if desired",
+      "Goodwill credit $25-50"
+    ],
+    "prohibited_actions": [],
+    "follow_up_rule": "FOLLOW-RULE-094",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-095",
+    "category": "Billing & Payments",
+    "subcategory": "Discount Not Applied",
+    "conditions": [
+      "Promotional discount or coupon not reflected in charge"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify coupon/promo validity",
+      "If valid: apply retroactively and refund difference",
+      "If expired/invalid: explain"
+    ],
+    "prohibited_actions": [
+      "Do not honor expired promotions without manager approval"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-095",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-096",
+    "category": "Safety & Security",
+    "subcategory": "Harassment at Destination",
+    "conditions": [
+      "Customer experienced harassment at hotel, tour, or by partner service staff"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Immediate safety measures",
+      "Relocation if at hotel",
+      "Report to local authorities if requested",
+      "Full refund for affected services",
+      "Formal investigation"
+    ],
+    "prohibited_actions": [
+      "Do not minimize",
+      "Do not question victim",
+      "Do not delay response"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-096",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-097",
+    "category": "Technical Issues",
+    "subcategory": "Booking Lost After System Error",
+    "conditions": [
+      "Confirmed booking disappeared from system"
+    ],
+    "department": "DEPT-06",
+    "department_name": "Technical Support",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "TEC-POL-20",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Check system logs",
+      "Reconstruct booking immediately",
+      "If cannot recover: rebook at same or better terms at no cost"
+    ],
+    "prohibited_actions": [
+      "Do not ask customer to rebook and pay again"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-097",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-098",
+    "category": "Cancellation Issues",
+    "subcategory": "No-Show Dispute",
+    "conditions": [
+      "Customer claims no-show penalty is unjust"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "CAN-POL-02",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Verify no-show status with supplier",
+      "If customer attempted contact before: consider waiver",
+      "If system error prevented check-in: waive penalty"
+    ],
+    "prohibited_actions": [
+      "Do not waive without verification"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-099",
+    "category": "Billing & Payments",
+    "subcategory": "Booking Value >$10,000",
+    "conditions": [
+      "High-value booking dispute exceeding $10,000"
+    ],
+    "department": "DEPT-04",
+    "department_name": "Billing & Finance",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Manager review of all financial aspects",
+      "Detailed investigation",
+      "Customer communication from senior staff"
+    ],
+    "prohibited_actions": [
+      "Do not resolve at agent level for amounts >$10,000"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-099",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-100",
+    "category": "Customer Service Quality",
+    "subcategory": "Social Media Complaint",
+    "conditions": [
+      "Complaint posted on social media by customer with significant following"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "ESC-SOP-08",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Respond publicly within 1 hour",
+      "Move conversation to DM",
+      "Assign senior agent",
+      "Resolve underlying issue expeditiously"
+    ],
+    "prohibited_actions": [
+      "Do not ignore",
+      "Do not argue publicly",
+      "Do not delete comments"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-100",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-101",
+    "category": "Flight Problems",
+    "subcategory": "Downgrade by Airline",
+    "conditions": [
+      "Customer involuntarily downgraded from booked cabin class"
+    ],
+    "department": "DEPT-02",
+    "department_name": "Flight Operations",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "FLT-POL-14",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Refund fare difference",
+      "Compensation per airline policy",
+      "If TravelNova booked wrong class: full class upgrade or refund"
+    ],
+    "prohibited_actions": [
+      "Do not blame airline without checking TravelNova booking records"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-101",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-102",
+    "category": "Refund Disputes",
+    "subcategory": "Travel Credit Dispute",
+    "conditions": [
+      "Customer wants cash refund instead of travel credit"
+    ],
+    "department": "DEPT-05",
+    "department_name": "Refunds & Compensation",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "REF-POL-01",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Explain that credits include 10% bonus value",
+      "If original terms allow cash: process cash refund",
+      "If policy mandates credit only: explain"
+    ],
+    "prohibited_actions": [
+      "Do not convert credit to cash without policy basis"
+    ],
+    "follow_up_rule": null,
+    "follow_up_days": null
+  },
+  {
+    "rule_id": "RULE-103",
+    "category": "Transportation & Transfers",
+    "subcategory": "Cruise Cabin Issue",
+    "conditions": [
+      "Cruise cabin not as booked or in poor condition"
+    ],
+    "department": "DEPT-10",
+    "department_name": "Transportation & Logistics",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "CRU-POL-18",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Contact cruise line for cabin change/upgrade",
+      "If onboard: must be reported immediately",
+      "Post-voyage claims within 14 days"
+    ],
+    "prohibited_actions": [
+      "Do not promise full cruise refund for cabin issues"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-103",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-104",
+    "category": "Booking Issues",
+    "subcategory": "Currency Display Error",
+    "conditions": [
+      "Price shown in wrong currency on website leading to booking at unexpected price"
+    ],
+    "department": "DEPT-01",
+    "department_name": "Booking Support",
+    "urgency": "High",
+    "priority": "P1",
+    "policy_id": "BIL-POL-03",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Verify display vs charged currency",
+      "If confirmed bug: honor displayed price or offer full refund",
+      "Report to Tech for fix"
+    ],
+    "prohibited_actions": [
+      "Do not force customer to pay higher amount due to system error"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-104",
+    "follow_up_days": 2
+  },
+  {
+    "rule_id": "RULE-105",
+    "category": "Safety & Security",
+    "subcategory": "Terrorism/Political Instability",
+    "conditions": [
+      "Destination experiences terrorism or political instability after booking"
+    ],
+    "department": "DEPT-09",
+    "department_name": "Safety & Compliance",
+    "urgency": "Critical",
+    "priority": "P0",
+    "policy_id": "VIS-POL-16",
+    "escalation_trigger": true,
+    "required_actions": [
+      "Monitor situation",
+      "Proactive customer outreach",
+      "Free rebooking or full refund",
+      "Evacuation assistance if customers already at destination"
+    ],
+    "prohibited_actions": [
+      "Do not minimize safety risks",
+      "Do not deny refund for active conflict zones"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-105",
+    "follow_up_days": 1
+  },
+  {
+    "rule_id": "RULE-GEN-01",
+    "category": "General",
+    "subcategory": "Other",
+    "conditions": [
+      "Complaint does not map to a specific travel category"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "Medium",
+    "priority": "P3",
+    "policy_id": "CMP-POL-07",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Acknowledge within 4 business hours",
+      "Identify the real category and re-route"
+    ],
+    "prohibited_actions": [
+      "Do not close a misrouted complaint without re-routing"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-GEN-01",
+    "follow_up_days": 3
+  },
+  {
+    "rule_id": "RULE-GEN-02",
+    "category": "General",
+    "subcategory": "Multiple Issues",
+    "conditions": [
+      "Complaint spans more than one product line"
+    ],
+    "department": "DEPT-08",
+    "department_name": "Customer Relations",
+    "urgency": "Medium",
+    "priority": "P2",
+    "policy_id": "CMP-SOP-09",
+    "escalation_trigger": false,
+    "required_actions": [
+      "Split into primary and secondary issues",
+      "Notify the supporting department"
+    ],
+    "prohibited_actions": [
+      "Do not reply before both departments have input"
+    ],
+    "follow_up_rule": "FOLLOW-RULE-GEN-02",
+    "follow_up_days": 2
   }
 ]

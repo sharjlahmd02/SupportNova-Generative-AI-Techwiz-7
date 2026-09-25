@@ -64,69 +64,81 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-canvas lg:grid lg:grid-cols-2">
       {/* Brand panel */}
-      <aside className="relative hidden overflow-hidden bg-brand-700 p-10 text-white lg:flex lg:flex-col">
+      <aside className="relative hidden overflow-hidden bg-ink p-10 text-white lg:flex lg:flex-col">
         <div
-          className="absolute inset-0 opacity-[0.18]"
+          className="absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 20% 20%, #fff 0, transparent 45%), radial-gradient(circle at 80% 70%, #c7d2fe 0, transparent 50%)',
+              'radial-gradient(circle at 18% 15%, rgba(255,255,255,0.35) 0, transparent 45%), radial-gradient(circle at 85% 75%, rgba(255,255,255,0.10) 0, transparent 55%)',
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
+            backgroundSize: '44px 44px',
           }}
           aria-hidden="true"
         />
         <div className="relative">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-md bg-white/15 ring-1 ring-white/25">
-              <ShieldCheck className="size-5" aria-hidden="true" />
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-4 focus-visible:ring-offset-ink"
+          >
+            <span className="grid size-9 place-items-center rounded-lg bg-white ring-1 ring-white/30">
+              <ShieldCheck className="size-5 text-ink" aria-hidden="true" />
             </span>
-            <span className="text-lg font-bold tracking-tight">SupportNova</span>
+            <span className="text-lg font-semibold tracking-tight">SupportNova</span>
           </Link>
         </div>
 
         <div className="relative mt-auto max-w-md">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight">
+          <h1 className="text-[34px] font-semibold leading-[1.15] tracking-tight">
             Complaint intelligence you can actually trust.
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-brand-100">
+          <p className="mt-4 text-sm leading-relaxed text-white/70">
             Every GenAI recommendation is re-checked by a deterministic Python rule engine before it
             reaches a customer.
           </p>
 
-          <ul className="mt-8 space-y-4">
+          <ul className="mt-9 space-y-5">
             {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
-              <li key={title} className="flex gap-3">
-                <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-white/10 ring-1 ring-white/20">
+              <li key={title} className="flex gap-3.5">
+                <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-white/10 ring-1 ring-inset ring-white/20">
                   <Icon className="size-4" aria-hidden="true" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold">{title}</p>
-                  <p className="text-xs leading-relaxed text-brand-100">{text}</p>
+                  <p className="text-sm font-semibold tracking-tight">{title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-white/60">{text}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative mt-10 text-xs text-brand-200/80">
+        <p className="relative mt-11 text-xs text-white/45">
           SupportNova · Generative AI PowerPlay
         </p>
       </aside>
 
       {/* Form panel */}
-      <main className="flex min-h-screen items-center justify-center p-5 sm:p-8">
+      <main className="flex min-h-screen items-center justify-center bg-surface p-5 sm:p-8">
         <div className="w-full max-w-sm">
-          <div className="mb-7 lg:hidden">
-            <span className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
-              <span className="grid size-8 place-items-center rounded-md bg-brand-600 text-white">
+          <div className="mb-8 lg:hidden">
+            <span className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-ink">
+              <span className="grid size-9 place-items-center rounded-lg bg-ink text-white">
                 <ShieldCheck className="size-5" aria-hidden="true" />
               </span>
               SupportNova
             </span>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight text-ink">
+          <h2 className="text-[22px] font-semibold leading-tight tracking-tight text-ink">
             {isRegister ? 'Create your account' : 'Sign in to SupportNova'}
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1.5 text-sm text-muted">
             {isRegister
               ? 'Register to start submitting and tracking complaints.'
               : 'Use your demo credentials, or register as a customer.'}
@@ -179,7 +191,7 @@ export default function Login() {
             <button
               type="button"
               onClick={toggleMode}
-              className="font-medium text-brand-600 hover:text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+              className="font-semibold text-ink underline underline-offset-4 decoration-1 hover:decoration-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 rounded-sm"
             >
               {isRegister ? 'Sign in' : 'Register'}
             </button>

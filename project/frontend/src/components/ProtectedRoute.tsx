@@ -37,7 +37,7 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
         <div className="mt-5 flex justify-center">
           <Link
             to={getHomePath(user.role)}
-            className="inline-flex h-11 items-center rounded-md bg-brand-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-1"
+            className="inline-flex h-11 items-center rounded-lg bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-ink/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
           >
             Go to my dashboard
           </Link>
